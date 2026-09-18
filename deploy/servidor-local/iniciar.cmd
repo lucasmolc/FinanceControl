@@ -8,6 +8,7 @@ if not defined BANCO set "BANCO=%~dp0..\..\src\FinanceControl.Api\Data\finance.d
 
 if not exist "%~dp0app\FinanceControl.Api.exe" (
   echo Aplicacao nao publicada. Execute publicar.cmd primeiro.
+  pause
   exit /b 1
 )
 
@@ -22,3 +23,8 @@ echo Acesse de outro dispositivo da rede: http://%COMPUTERNAME%:%PORTA%  (ou pel
 echo.
 cd /d "%~dp0app"
 "%~dp0app\FinanceControl.Api.exe"
+if errorlevel 1 (
+  echo.
+  echo O servidor parou com erro. Veja a mensagem acima ^(porta %PORTA% ja em uso? "npm run dev" aberto?^).
+  pause
+)
