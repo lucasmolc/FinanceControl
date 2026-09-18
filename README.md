@@ -111,6 +111,20 @@ npm run dev:api
 
 O caminho real em uso aparece em **Configurações → Cópia de segurança** e em `GET /api/about`.
 
+### Servidor na rede local (Windows)
+
+Para usar um computador como servidor e acessar pelo celular ou por outros PCs **da mesma rede**:
+
+1. Publique: `deploy\servidor-local\publicar.cmd` (gera `deploy\servidor-local\app`, fora do Git).
+2. Ajuste, se quiser, [`deploy/servidor-local/servidor.conf`](deploy/servidor-local/servidor.conf): `PORTA` (padrão `5074`), `BANCO` (vazio = o mesmo banco do `npm run dev`) e `HOSTS_EXTRAS`.
+3. Libere a porta só para a rede local, uma vez, no PowerShell **como administrador** (a rede do Windows precisa estar como *Privada*):
+   ```powershell
+   New-NetFirewallRule -DisplayName "LMM Finance Control" -Direction Inbound -Protocol TCP -LocalPort 5074 -RemoteAddress LocalSubnet -Profile Private -Action Allow
+   ```
+4. Inicie com `deploy\servidor-local\iniciar.cmd` e acesse `http://NOME-DO-PC:5074` pelos outros dispositivos. Para iniciar com o Windows, crie um atalho para o `iniciar.cmd` em `shell:startup`.
+
+A aplicação **não tem login**: quem acessa a porta lê e altera todos os dados. Nunca encaminhe a porta no roteador. O `iniciar.cmd` aceita apenas localhost, o nome e os IPs atuais do computador (mais `HOSTS_EXTRAS`), o que bloqueia ataques de *DNS rebinding*. O servidor usa a mesma porta do `npm run dev`: rode um de cada vez. Para atualizar, pare o servidor (`Ctrl+C`) e publique de novo.
+
 ---
 
 ## 🧰 Tecnologia

@@ -38,3 +38,6 @@ appsettings.*.local.json
 
 # Estado local do detector do impeccable
 .impeccable/live/
+
+# Publicação do servidor local
+deploy/servidor-local/app/
