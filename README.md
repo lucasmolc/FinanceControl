@@ -120,3 +120,7 @@ docs/                             arquitetura, API, migrações, especificação
 ```
 
 Consulte [Arquitetura](docs/ARCHITECTURE.md), [API](docs/API.md) e [Migrações](docs/MIGRATIONS.md).
+
+## Licença
+
+[MIT](LICENSE) © 2026 Lucas Mol.
