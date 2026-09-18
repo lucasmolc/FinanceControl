@@ -1,126 +1,236 @@
-# LMM Finance Control
+<div align="center">
 
-Controle financeiro pessoal local-first, construído com .NET 10, React 19 e SQLite. Os dados financeiros permanecem no computador do usuário e não dependem de serviços em nuvem.
+# 💰 LMM Finance Control
 
-## Stack
+**Controle financeiro pessoal local-first — seus dados ficam no seu computador.**
 
-- ASP.NET Core Minimal APIs em .NET 10 LTS
-- React 19 + TypeScript + Vite
-- SQLite com `Microsoft.Data.Sqlite` e Dapper
-- Migrações SQL versionadas
-- xUnit, Vitest e ESLint
+Lançamentos, contas a pagar, cartões e faturas, metas, investimentos, múltiplas moedas, relatórios, projeções e o plano **70-20-10**, numa interface moderna, acessível e instalável.
 
-## Pré-requisitos
+[![.NET 10](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet&logoColor=white)](https://dotnet.microsoft.com/)
+[![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite 7](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![SQLite](https://img.shields.io/badge/SQLite-local-003B57?logo=sqlite&logoColor=white)](https://sqlite.org/)
+[![Licença MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
 
-- [.NET SDK 10](https://dotnet.microsoft.com/download/dotnet/10.0)
-- Node.js 20.19+ ou 22.12+
-- npm 10+
+[Funcionalidades](#-funcionalidades) · [Começando](#-começando) · [Tecnologia](#-tecnologia) · [Arquitetura](#-arquitetura) · [APIs](#-apis) · [Privacidade](#-dados-e-privacidade) · [Documentação](#-documentação)
 
-## Executar em desenvolvimento
+</div>
 
-```powershell
+---
+
+## ✨ Funcionalidades
+
+### O dia a dia
+- **Painel personalizável** — saldo do mês, teto de gastos, ritmo de gastos, fluxo de 6 meses, gastos por categoria, orçamento, próximos vencimentos (contas e faturas), metas, formas de pagamento e plano. Widgets podem ser reordenados, ocultados e restaurados.
+- **Lançamentos** — receitas, despesas e investimentos com categoria, conta, forma de pagamento e moeda; agrupados por dia, com ações em lote (categorizar, remover) e **Desfazer** em tudo.
+- **Contas a pagar** — checklist mensal com status claros ("Vence em 28/09 (10 dias)", "Vencida há 3 dias"), débito automático e faturas de cartão vencidas na mesma lista.
+- **Cartões e faturas** — ciclo de fechamento/vencimento, fatura atual, fechadas e futuras, pagamento por conta bancária e limite usado.
+- **Assinaturas** — Netflix, academia, Amazon… com equivalente mensal em reais, cobrança pendente e lançamento com um toque.
+- **Contas bancárias** — saldo atual, extrato com "Saldo após", o que ainda vai ser debitado no mês e saldo projetado.
+- **Metas e investimentos** — aportes, resgates, histórico estornável, alocação por tipo/liquidez e rendimento estimado ("Rende 110% do CDI ≈ 11,7% ao ano").
+- **Fechar mês** — lista as pendências e congela o mês; alterações com data nele ficam bloqueadas até reabri-lo.
+
+### Planejamento
+- **Plano 70-20-10** sugerido no setup: 70% para gastos fixos (um *limite*, não uma meta), 20% para lazer e no mínimo 10% investidos, reserva de emergência de 6 salários e **Número da liberdade** de 150 salários. Aplicar o plano mostra o teto antes → depois, vincula as metas sem duplicar e pode criar as categorias-balde.
+- **Relatórios** — receitas × despesas, categorias, maiores gastos, formas de pagamento, evolução do patrimônio, exposição cambial e realizado × plano; exportação CSV e impressão.
+- **Projeções** — cenários de patrimônio com aporte, rendimento e marcos (reserva, Número da liberdade), com faixa de ±20% do CDI.
+- **Mercado** — cotações e indicadores atualizados automaticamente, conversor e cotação manual.
+
+### Experiência
+- **Rápido de usar** — `Novo lançamento` em qualquer tela (botão, `+` no celular ou tecla `N`) e paleta de comandos `Ctrl K` com páginas, ações e recentes.
+- **Customizável** — 5 temas (noite, esmeralda, ouro, grafite, claro), acentos, densidade confortável/compacta, animações e **ocultar valores** com um clique.
+- **Várias moedas** — BRL, USD, EUR, GBP, JPY, CHF, CAD, AUD, ARS, BTC, ETH, SOL e USDT; totais convertidos para real e moedas sem cotação sinalizadas em vez de contarem como zero.
+- **Resiliente** — sem conexão com o servidor local, um único aviso aparece no topo, as gravações ficam bloqueadas, nada é mostrado como R$ 0,00 falso e as telas recarregam sozinhas quando ele volta.
+- **Acessível e responsivo** — navegação por teclado, leitor de tela (gráficos SVG com resumo textual), alvos de toque de 44 px, dock inferior no celular e `prefers-reduced-motion`.
+- **Instalável** — PWA com manifest e ícones; a fonte Inter é empacotada localmente.
+- **Primeiros passos guiados** — setup opcional, tour interativo e dados de exemplo apenas como sugestão (nunca gravados).
+
+---
+
+## 🚀 Começando
+
+### Pré-requisitos
+
+| Ferramenta | Versão |
+|---|---|
+| [.NET SDK](https://dotnet.microsoft.com/download/dotnet/10.0) | 10.0 |
+| [Node.js](https://nodejs.org/) | 20.19+ ou 22.12+ |
+| npm | 10+ |
+
+### Em desenvolvimento
+
+```bash
 npm install
 npm run dev
 ```
 
-A interface abre em `http://localhost:5173`; o Vite encaminha `/api` para a API em `http://localhost:5074`.
+- Interface: <http://localhost:5173> (o Vite encaminha `/api` para a API)
+- API: <http://localhost:5074>
 
-Também é possível executar cada parte separadamente:
+Na primeira execução o banco é criado e migrado automaticamente — não há nada para configurar.
 
-```powershell
-npm run dev:api
-npm run dev:web
-```
+### Aplicação integrada
 
-## Verificar o projeto
+API e interface no mesmo processo:
 
-```powershell
-npm run check
-```
-
-Esse comando executa lint, testes, compilação do frontend e compilação .NET em `Release`.
-
-Depois do build, execute a aplicação integrada — API e frontend no mesmo processo — com:
-
-```powershell
+```bash
+npm run build
 npm start
 ```
 
-A aplicação ficará disponível em `http://localhost:5074`.
+Disponível em <http://localhost:5074>.
 
-## Configuração
+### Scripts
 
-A configuração base está exclusivamente em `src/FinanceControl.Api/appsettings.json`.
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | API + interface com recarga automática |
+| `npm run dev:api` / `npm run dev:web` | cada parte separadamente |
+| `npm run build` | build da interface e da solução .NET em `Release` |
+| `npm start` | executa a aplicação integrada |
+| `npm test` | testes do frontend (Vitest) e do backend (xUnit) |
+| `npm run lint` | ESLint com zero avisos |
+| `npm run check` | lint + testes + builds — o portão de qualidade |
 
-O caminho padrão é `data/finance.db`, relativo ao diretório atual do processo. Como `dotnet run --project src/FinanceControl.Api` (usado por `npm run dev` e `npm start`) executa a partir da pasta do projeto, o banco em uso fica em `src/FinanceControl.Api/Data/finance.db`. O caminho absoluto real aparece em **Configurações → Cópia de segurança** e em `GET /api/about`. Para alterar o caminho, defina:
+### Configuração
+
+A configuração fica em [`src/FinanceControl.Api/appsettings.json`](src/FinanceControl.Api/appsettings.json).
+
+| Chave | Padrão | Descrição |
+|---|---|---|
+| `Database:Path` | `data/finance.db` | caminho do banco, relativo ao diretório do processo (com os scripts npm: `src/FinanceControl.Api/Data/finance.db`) |
+| `DATABASE_PATH` (variável de ambiente) | — | sobrescreve o caminho do banco |
+| `Market:RefreshHours` | `6` | intervalo da atualização automática de cotações |
+| `Urls` | `http://localhost:5074` | endereço da API |
 
 ```powershell
 $env:DATABASE_PATH = "C:\dados\finance-control.db"
 npm run dev:api
 ```
 
-## Banco e compatibilidade
+O caminho real em uso aparece em **Configurações → Cópia de segurança** e em `GET /api/about`.
 
-- O banco existente é reutilizado automaticamente; migrações pendentes rodam na inicialização e ficam registradas em `schema_migrations` (atual: `009_bill_active_since`).
-- Valores monetários são armazenados em centavos inteiros.
-- Remoções são lógicas e podem ser desfeitas pela ação **Desfazer**; movimentações de metas, investimentos e contas podem ser estornadas pelo histórico.
-- O banco (`Data/finance.db`) é criado e migrado automaticamente na primeira execução e **não é versionado**, assim como WAL, SHM e `Data/backups/`. Para levar seus dados a outra máquina, use a cópia de segurança.
-- A aplicação é de uso local: não tem login e aceita apenas `localhost`. Não a exponha na internet.
+---
 
-### Cópia de segurança
+## 🧰 Tecnologia
 
-Em **Configurações → Cópia de segurança**:
+| Camada | Tecnologias |
+|---|---|
+| **Backend** | ASP.NET Core Minimal APIs (.NET 10 LTS), `TimeProvider`, serviços em segundo plano (cotações e débito automático), ProblemDetails, OpenAPI |
+| **Dados** | SQLite (WAL) com `Microsoft.Data.Sqlite` e Dapper, migrações SQL versionadas e aditivas |
+| **Frontend** | React 19, TypeScript estrito, Vite 7, rotas por hash, páginas carregadas sob demanda |
+| **Interface** | biblioteca de componentes própria (30+ componentes), gráficos SVG próprios, ícones [Lucide](https://lucide.dev/), fonte [Inter](https://rsms.me/inter/) local, CSS em *cascade layers* com tokens e temas |
+| **Qualidade** | xUnit + `WebApplicationFactory`, Vitest + Testing Library, ESLint 9 com `--max-warnings 0` |
 
-- **Exportar JSON** (`GET /api/backup`) — todos os dados em formato legível.
-- **Baixar banco** (`GET /api/backup/database`) — cópia SQLite consistente.
-- **Restaurar JSON** (`POST /api/backup/restore`) — substitui os dados atuais; antes, uma cópia automática é gravada em `Data/backups/antes-da-restauracao-*.db`.
+Dependências de runtime do frontend: apenas `react`, `react-dom`, `lucide-react` e `@fontsource-variable/inter`.
 
-## Primeiro uso
+---
 
-- A base inicia vazia: categorias, contas, metas, cartões e demais módulos só recebem registros criados pelo usuário.
-- O setup inicial é opcional e aceita o nome em branco; nome e planejamento permanecem editáveis em Configurações.
-- A meta da reserva de emergência é o salário líquido mensal multiplicado pelos meses de reserva; com salário e meses definidos, uma única meta "Reserva de emergência" é mantida automaticamente em Metas (sem duplicar).
-- Exemplos aparecem apenas como sugestões nos formulários; nunca são gravados automaticamente.
-- O tour é exibido automaticamente uma única vez após o primeiro acesso ao painel; para revê-lo, use **Configurações › Ajuda › Rever tour guiado**.
-- O planejamento inicial pode ser refeito a qualquer momento em **Configurações › Ajuda › Revisar planejamento inicial** (ou editado diretamente em Perfil e planejamento).
-- O setup sugere o **plano 70-20-10** (fixos · lazer · investimento mínimo, reserva de 6 salários e Número da liberdade de 150 salários). Aplicado, ele define o teto de gastos do mês (fixos + lazer), vincula as metas sem duplicar e pode criar as categorias-balde; tudo editável em **Configurações › Plano 70-20-10**.
+## 🏗️ Arquitetura
 
-## Uso diário
+Arquitetura hexagonal: o domínio não conhece banco nem HTTP, e cada adaptador depende apenas das portas da aplicação.
 
-- Cada área tem endereço próprio (`#/painel`, `#/lancamentos`, `#/contas-a-pagar`, …), então Voltar e recarregar funcionam.
-- Painel, Lançamentos, Contas a pagar e Categorias navegam entre meses pelo seletor do topo.
-- Todos os registros podem ser editados; valores aceitam `1.234,56`, `1234,56` ou `12.50`, e entradas inválidas são recusadas em vez de virarem zero.
-- Marcar uma conta como paga gera a despesa correspondente (desmarcar remove o lançamento); vincular um lançamento a uma conta bancária atualiza o saldo.
-- Compras no cartão entram na fatura do ciclo (fechamento/vencimento do cartão); em **Cartões** é possível ver e pagar a fatura por uma conta bancária.
-- **Novo lançamento** está disponível em qualquer tela (botão, `+` no celular ou tecla `N`); **Ctrl K** abre a paleta de comandos.
-- **Fechar mês** (Painel, Lançamentos ou paleta) lista as pendências e congela o mês: alterações com data nele ficam bloqueadas até reabri-lo; os fechamentos ficam listados em Configurações.
-- Movimentações estornadas e remoções podem ser desfeitas pela ação **Desfazer**.
-- O app pode ser instalado pelo navegador (manifest e ícones em `src/FinanceControl.Web/public`); a fonte Inter é empacotada localmente, sem serviços externos.
-- Sem conexão com o servidor local, um aviso único aparece no topo, as ações que gravam ficam bloqueadas e as telas recarregam sozinhas quando ele volta.
-- Histórico das rodadas de melhoria e notas da crítica de design: [docs/MELHORIAS.md](docs/MELHORIAS.md).
+```mermaid
+flowchart LR
+    Web["🖥️ FinanceControl.Web<br/>React 19 + Vite"] -- "HTTP /api" --> Api
+    subgraph Backend [".NET 10"]
+        Api["FinanceControl.Api<br/>Minimal APIs · hosted services"] --> App["FinanceControl.Application<br/>casos de uso · validação · portas"]
+        App --> Domain["FinanceControl.Domain<br/>regras puras"]
+        Infra["FinanceControl.Infrastructure<br/>SQLite · migrações · mercado"] -. implementa portas .-> App
+    end
+    Infra --> DB[("SQLite<br/>finance.db")]
+    Infra -- "somente cotações" --> Ext["🌐 APIs públicas<br/>AwesomeAPI · CoinGecko · BCB"]
+```
 
-## Estrutura
+**Regras de domínio que valem para todo o sistema**
+- Dinheiro em inteiros (centavos) na moeda do registro; totais convertidos para BRL.
+- Datas ISO (`AAAA-MM-DD`), meses `AAAA-MM`.
+- Remoções lógicas com **Desfazer**; movimentações de saldo atômicas e estornáveis.
+- Mês fechado bloqueia alterações com data nele.
 
 ```text
 src/
-  FinanceControl.Domain/          núcleo de domínio
-  FinanceControl.Application/     casos de uso, contratos e portas
-  FinanceControl.Infrastructure/  adaptador SQLite e migrações
-  FinanceControl.Api/             adaptador HTTP e composição
-  FinanceControl.Web/             adaptador React/Vite
+  FinanceControl.Domain/          regras puras (saldos, faturas, moedas, plano, débito automático)
+  FinanceControl.Application/     casos de uso, validação de entrada e portas
+  FinanceControl.Infrastructure/  adaptador SQLite, migrações e fontes de mercado
+  FinanceControl.Api/             endpoints HTTP, serviços em segundo plano e composição
+  FinanceControl.Web/
     src/components/ui/            biblioteca de componentes (uma pasta por componente)
     src/components/charts/        gráficos SVG acessíveis
     src/features/                 páginas e modelos por funcionalidade
-    src/styles/                   CSS em camadas (tokens → base → app → components → adapt)
-tests/
-  FinanceControl.Api.Tests/       testes de domínio, migrações e integração HTTP
-docs/                             arquitetura, API, migrações, especificação e melhorias
-.claude/skills/impeccable/        skill de design usada pelo Claude Code
-.impeccable/critique/             histórico das críticas de design
+    src/styles/                   CSS em camadas (theme → base → app → components → adapt)
+tests/FinanceControl.Api.Tests/   domínio, migrações e integração HTTP
+docs/                             arquitetura, API, migrações e histórico de melhorias
 ```
 
-Consulte [Arquitetura](docs/ARCHITECTURE.md), [API](docs/API.md) e [Migrações](docs/MIGRATIONS.md).
+---
 
-## Licença
+## 🔌 APIs
 
-[MIT](LICENSE) © 2026 Lucas Mol.
+### APIs públicas consumidas
+
+Chamadas **somente pelo backend**, sem chave e **sem enviar nenhum dado do usuário** — apenas os códigos das moedas e das séries.
+
+| Serviço | Uso |
+|---|---|
+| [AwesomeAPI](https://docs.awesomeapi.com.br/api-de-moedas) | cotações de moedas e cripto em BRL (fonte principal) |
+| [CoinGecko](https://www.coingecko.com/en/api) | cotação de criptomoedas (reserva) |
+| [Banco Central — SGS](https://dadosabertos.bcb.gov.br/) | Selic (432), CDI (4389), IPCA 12 meses (13522) e IPCA do mês (433) |
+
+Os valores ficam salvos no banco, então o app continua funcionando sem internet com a última cotação conhecida (ou uma cotação manual).
+
+### API HTTP local
+
+Documentação completa em [docs/API.md](docs/API.md). Principais rotas:
+
+| Área | Rotas |
+|---|---|
+| Leitura agregada | `GET /api/state`, `GET /api/summary?month=`, `GET /api/about`, `GET /api/health` |
+| Registros (CRUD) | `GET/POST/PUT/DELETE /api/{módulo}` e `POST /api/{módulo}/{id}/restore` — lançamentos, categorias, contas a pagar, contas bancárias, cartões, assinaturas, metas e investimentos |
+| Contas e faturas | `GET/POST /api/checklist`, `GET /api/card-invoices?month=`, `GET /api/cards/{id}/invoices`, `POST /api/cards/{id}/invoices/{mês}/pay`, `POST /api/subscriptions/{id}/charge` |
+| Movimentações | aportes/resgates de metas e investimentos, depósitos e transferências bancárias, extratos e estornos |
+| Mês | `POST /api/months/{AAAA-MM}/close`, `POST /api/months/{AAAA-MM}/reopen`, `GET /api/months/closings` |
+| Planejamento | `POST /api/setup`, `POST/DELETE /api/plan`, `PUT /api/settings`, `POST /api/settings/emergency-goal` e `/freedom-goal` |
+| Análises | `GET /api/reports` (+ CSV), `GET /api/projections/base`, `GET /api/market`, `POST /api/market/refresh`, `PUT /api/market/rates/{moeda}` |
+| Backup | `GET /api/backup`, `GET /api/backup/database`, `POST /api/backup/restore` |
+
+Erros seguem ProblemDetails, com o campo inválido e a mensagem em português.
+
+---
+
+## 🔒 Dados e privacidade
+
+- **Local-first:** tudo fica em um arquivo SQLite no seu computador. Nenhum dado financeiro sai da máquina.
+- **Não versionado:** o banco, WAL/SHM e `Data/backups/` são ignorados pelo git.
+- **Uso local:** a aplicação não tem login e aceita apenas `localhost`. **Não a exponha na internet.**
+- **Cópia de segurança** em **Configurações → Cópia de segurança**:
+  - **Exportar JSON** — todos os dados em formato legível;
+  - **Baixar banco** — cópia SQLite consistente;
+  - **Restaurar JSON** — substitui os dados atuais, gravando antes uma cópia automática em `Data/backups/`.
+
+---
+
+## ✅ Qualidade
+
+- **742 testes** no frontend e **342** no backend, com `npm run check` verde e zero avisos.
+- Migrações aditivas e testadas sobre bancos reais (atual: `009_bill_active_since`).
+- Interface avaliada em quatro rodadas de crítica de design (heurísticas de usabilidade, acessibilidade e responsividade) — notas e histórico em [docs/MELHORIAS.md](docs/MELHORIAS.md).
+
+---
+
+## 📚 Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | camadas, portas e decisões |
+| [API.md](docs/API.md) | todas as rotas, formatos e erros |
+| [MIGRATIONS.md](docs/MIGRATIONS.md) | histórico do esquema do banco |
+| [MELHORIAS.md](docs/MELHORIAS.md) | rodadas de melhoria e notas de cada tela |
+| [DESIGN.md](src/FinanceControl.Web/DESIGN.md) | sistema de design: tokens, componentes e movimento |
+
+---
+
+## 📄 Licença
+
+Distribuído sob a licença [MIT](LICENSE). © 2026 Lucas Mol.
