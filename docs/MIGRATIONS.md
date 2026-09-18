@@ -1,12 +1,17 @@
 # Migrações SQLite
 
-As migrações ficam em `src/FinanceControl.Infrastructure/Persistence/Migrations` e são recursos incorporados no assembly.
+São dois conjuntos independentes, incorporados no assembly, cada um com o próprio `schema_migrations`:
+
+| Pasta (`src/FinanceControl.Infrastructure/Persistence/…`) | Banco | Aplicada |
+|---|---|---|
+| `Migrations` | financeiro de cada usuário (`users/<id>/finance.db`) | no cadastro do usuário e, para os já cadastrados, a cada inicialização |
+| `AccountMigrations` | contas (`accounts.db`) | a cada inicialização |
 
 ## Convenção
 
-Use nomes crescentes e imutáveis, como `003_descricao_curta.sql`.
+Use nomes crescentes e imutáveis, como `003_descricao_curta.sql`, numerados dentro de cada pasta.
 
-Na inicialização, `DatabaseMigrator` ativa WAL, cria `schema_migrations`, identifica scripts pendentes, executa cada script em uma transação e registra a versão aplicada.
+`DatabaseMigrator` ativa WAL, cria `schema_migrations`, identifica os scripts pendentes da pasta, executa cada script em uma transação e registra a versão aplicada.
 
 Nunca altere um script já distribuído. Crie uma nova migração e preserve os dados existentes. Antes de mudanças de schema, valide tanto um banco vazio quanto uma cópia de um banco legado.
 
@@ -105,3 +110,11 @@ Validação feita: banco vazio e banco no estado da 007 (testes automatizados: c
 Somente aditiva: `bills.active_since TEXT` (nula, sem padrão). Contas existentes ficam com `NULL` = sem restrição de mês (comportamento anterior); nenhuma linha é modificada. Contas novas recebem a data de hoje pela aplicação (R1-BILLS-1): checklist, resumo do mês e fechamento só consideram a conta a partir do mês de `active_since`.
 
 Validação feita: banco vazio e banco no estado da 008 com uma conta (teste automatizado: coluna `TEXT` nula sem padrão, linha preservada com `active_since` nulo, `schema_migrations` = 009) e cópia de `Data/backups/antes-do-reset-20260918-020109.db` (nunca o original), migrada pelo `DatabaseMigrator` real ao subir a API: `schema_migrations` 7 → 9, a conta existente "Internet" continua com os mesmos valores e `active_since` nulo (aparece em agosto), `goals.current_cents` (soma 6 101 200) e lançamentos (3, soma 489 800) inalterados, `integrity_check` ok e sem violações de chave estrangeira; uma conta criada pela API recebeu `active_since` = hoje e ficou fora do resumo de agosto.
+
+## Contas: AccountMigrations/001_users
+
+Cria o banco de contas (`accounts.db`) com a tabela `users` (`username` único sem diferenciar maiúsculas, `password_hash` PBKDF2, `security_stamp` e `created_at`; `id` com `AUTOINCREMENT`, para que um id — e o banco `users/<id>/finance.db` associado — nunca seja reutilizado).
+
+Não altera nenhum banco financeiro. O `finance.db` de versões sem login continua intacto na pasta de dados, mas sem dono: cada conta começa com um banco novo e vazio, migrado pelas mesmas migrações 001–009. Para usar os dados antigos, copie o arquivo para `users/<id>/finance.db` com o servidor parado ou restaure um backup JSON (passo a passo no README, seção "Contas de usuário e segurança").
+
+Validação feita: testes automatizados de integração (cadastro cria `accounts.db` e `users/<id>/finance.db` já no `schema_version` 009, dois usuários com arquivos separados, hash no formato `pbkdf2-sha256$600000$…`, troca do `security_stamp` invalida a sessão) e subida real da API em pasta de dados vazia (cadastro, login, sessão e isolamento pela interface).

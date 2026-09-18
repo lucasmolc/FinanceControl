@@ -2,7 +2,7 @@
 
 ## Produto
 
-Gerenciador financeiro pessoal, local-first, com armazenamento SQLite. A interface é escura, moderna, modular e integralmente em português brasileiro.
+Gerenciador financeiro pessoal, local-first, com armazenamento SQLite. Multiusuário com login (cadastro livre): cada usuário tem o próprio banco. Roda só no computador ou como servidor na rede de casa (`deploy/servidor-local`). A interface é escura, moderna, modular e integralmente em português brasileiro.
 
 ## Stack obrigatória
 
@@ -27,15 +27,24 @@ Gerenciador financeiro pessoal, local-first, com armazenamento SQLite. A interfa
 - Existe somente `src/FinanceControl.Api/appsettings.json`; não crie variantes por ambiente nem arquivos `.example`.
 - Todo arquivo de configuração versionado deve ser utilizado diretamente pela aplicação.
 - Sobrescritas sensíveis ou específicas do ambiente usam variáveis de ambiente.
-- `DATABASE_PATH` sobrescreve `Database:Path`.
+- `DATA_DIRECTORY` sobrescreve `Database:Directory` (pasta de dados).
+- Os scripts do servidor local (`deploy/servidor-local`) só definem variáveis de ambiente (`Urls`, `AllowedHosts`, `DATA_DIRECTORY`) a partir de `servidor.conf`.
+
+## Contas e segurança
+
+- Toda a API exige sessão (política de autorização padrão). Endpoints públicos são exceções explícitas com `AllowAnonymous` (hoje: `/api/health`, `/api/auth/*` e a interface estática); não adicione outros sem motivo.
+- Requisições que alteram dados exigem `X-Requested-With: FinanceControl` (anti-CSRF); o frontend envia pelo helper `json()` de `api/client.ts`.
+- Os dados financeiros são isolados por arquivo: `UserDatabaseScope` escolhe o banco do usuário da requisição. Nunca resolva `IFinanceStore`/`IFinanceUseCases` fora de um escopo com usuário (jobs em segundo plano usam `EnterAsync` por usuário).
+- Senhas só como hash (`PasswordHasher`, PBKDF2); mensagens de login não revelam se o usuário existe.
 
 ## Dados e persistência
 
-- O repositório é público: nunca versione o banco local (`src/FinanceControl.Api/Data/finance.db`), arquivos WAL, SHM, journal, `Data/backups/` nem dados pessoais. O banco é criado e migrado automaticamente na primeira execução.
-- O caminho relativo do banco é resolvido a partir do diretório atual do processo; não altere essa resolução sem migrar os dados existentes.
+- Pasta de dados: `accounts.db` (usuários), `keys/` (chaves da sessão) e `users/<id>/finance.db` (banco de cada usuário, com `backups/` ao lado).
+- O repositório é público: nunca versione bancos (`*.db`), arquivos WAL, SHM, journal, `Data/users/`, `Data/keys/`, backups nem dados pessoais. Os bancos são criados e migrados automaticamente (o do usuário, no cadastro).
+- O caminho relativo da pasta de dados é resolvido a partir do diretório atual do processo; não altere essa resolução sem migrar os dados existentes.
 - Valores monetários são inteiros de 64 bits em centavos.
 - Datas de negócio usam texto ISO `YYYY-MM-DD`; competências usam `YYYY-MM`.
-- Toda alteração de schema exige uma migração incremental em `Infrastructure/Persistence/Migrations`.
+- Toda alteração de schema exige uma migração incremental em `Infrastructure/Persistence/Migrations` (banco financeiro) ou `Infrastructure/Persistence/AccountMigrations` (banco de contas).
 - Migrações aplicadas nunca devem ser editadas; crie uma nova migração.
 - Preserve compatibilidade com bancos criados por versões anteriores.
 - Registros financeiros não devem ser apagados fisicamente. Exclusões são lógicas e exigem confirmação na UI.

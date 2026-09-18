@@ -3,10 +3,16 @@ using Dapper;
 
 namespace FinanceControl.Infrastructure.Persistence;
 
-public sealed partial class DatabaseMigrator(SqliteConnectionFactory connectionFactory)
+/// <summary>
+/// Aplica, em ordem e uma única vez, as migrações SQL embutidas de uma pasta: <see cref="FinanceFolder"/> (banco
+/// financeiro de cada usuário) ou <see cref="AccountFolder"/> (banco de contas).
+/// </summary>
+public sealed class DatabaseMigrator(SqliteConnectionFactory connectionFactory, string migrationFolder = DatabaseMigrator.FinanceFolder)
 {
-    [GeneratedRegex(@"\.Migrations\.(?<id>\d{3}_[^.]+)\.sql$", RegexOptions.CultureInvariant)]
-    private static partial Regex MigrationNamePattern();
+    public const string FinanceFolder = "Migrations";
+    public const string AccountFolder = "AccountMigrations";
+
+    private readonly Regex _migrationName = new($@"\.{Regex.Escape(migrationFolder)}\.(?<id>\d{{3}}_[^.]+)\.sql$", RegexOptions.CultureInvariant);
 
     public async Task MigrateAsync(CancellationToken cancellationToken = default)
     {
@@ -16,7 +22,7 @@ public sealed partial class DatabaseMigrator(SqliteConnectionFactory connectionF
         var applied = (await connection.QueryAsync<string>("SELECT id FROM schema_migrations")).ToHashSet(StringComparer.Ordinal);
         var assembly = typeof(DatabaseMigrator).Assembly;
         var migrations = assembly.GetManifestResourceNames()
-            .Select(name => (Name: name, Match: MigrationNamePattern().Match(name)))
+            .Select(name => (Name: name, Match: _migrationName.Match(name)))
             .Where(item => item.Match.Success)
             .Select(item => (item.Name, Id: item.Match.Groups["id"].Value))
             .OrderBy(item => item.Id, StringComparer.Ordinal);

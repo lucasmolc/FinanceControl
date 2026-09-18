@@ -4,6 +4,7 @@ import type {
   SubscriptionChargeResult, Transaction, PlanCommand, CardInvoiceRow,
 } from "../types";
 import { isGatewayFailure, reportRequestFailure, reportRequestSuccess } from "./connectivity";
+import { reportUnauthorized } from "./session";
 
 interface ProblemDetails { title?: string; detail?: string; errors?: Record<string, string[] | string>; }
 
@@ -57,6 +58,7 @@ async function send(url: string, init?: RequestInit): Promise<Response> {
   const problem = response.ok ? undefined : await readProblem(response);
   if (response.status === 500 && !isProblemDetails(problem)) { reportRequestFailure(); throw new ApiError(NETWORK_ERROR_MESSAGE, 0); }
   reportRequestSuccess();
+  if (response.status === 401) reportUnauthorized();
 
   if (!response.ok) {
     const fields = firstMessages(problem?.errors);
@@ -86,8 +88,15 @@ async function requestPage<T>(url: string, page: PageRequest): Promise<EntriesPa
   return { items, total };
 }
 
-/** JSON request init (exported for feature API modules). */
-export const json = (method: string, body?: unknown): RequestInit => ({ method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
+/**
+ * JSON request init for every call that changes data (exported for feature API modules). The server rejects changes
+ * without `X-Requested-With` (anti-CSRF: forms and scripts from other sites cannot send it).
+ */
+export const json = (method: string, body?: unknown): RequestInit => ({
+  method,
+  headers: { "Content-Type": "application/json", "X-Requested-With": "FinanceControl" },
+  body: body === undefined ? undefined : JSON.stringify(body),
+});
 const monthQuery = (month: string) => `month=${encodeURIComponent(month)}`;
 
 export interface OkResult { ok: boolean; }

@@ -8,7 +8,7 @@ web
 
 ## Users
 
-Pessoas que administram as próprias finanças no computador e precisam acompanhar orçamento, contas, patrimônio e objetivos sem depender de planilhas ou informações dispersas.
+Pessoas que administram as próprias finanças no computador e precisam acompanhar orçamento, contas, patrimônio e objetivos sem depender de planilhas ou informações dispersas. Na mesma casa, várias pessoas podem usar um único servidor local, cada uma com a própria conta e os próprios dados, pelo computador ou pelo celular.
 
 ## Product Purpose
 
@@ -18,11 +18,13 @@ O produto tem sucesso quando a pessoa entende sua situação financeira com clar
 
 ## Positioning
 
-O diferencial central é o funcionamento local-first: os dados financeiros permanecem sob controle do usuário no próprio computador, sem conta ou serviço de nuvem obrigatório, enquanto todo o ciclo financeiro pessoal fica reunido em uma única aplicação.
+O diferencial central é o funcionamento local-first: os dados financeiros permanecem sob controle do usuário em um computador da casa, sem serviço de nuvem, enquanto todo o ciclo financeiro pessoal fica reunido em uma única aplicação. A conta de usuário é local (criada no próprio servidor) e serve para separar os dados de cada pessoa, não para sincronizar com terceiros.
 
 ## Operating Context
 
-- Uso individual em navegador, com a aplicação e o banco executados localmente.
+- Uso em navegador, com a aplicação e os bancos executados localmente: só no próprio computador ou como servidor na rede de casa (Windows), acessado por outros computadores e celulares da mesma rede.
+- Login obrigatório com cadastro livre na tela de entrada; cada conta começa vazia e vê apenas os próprios dados.
+- Sessão de 30 dias renovada com o uso; "Sair" fica em Configurações › Conta.
 - Configuração inicial opcional e reaberta pelas Configurações quando necessário.
 - Revisão recorrente do painel mensal, do checklist de contas e do consumo do orçamento por categoria.
 - Cadastro manual apenas dos módulos e dados relevantes para cada pessoa; exemplos de formulário não criam registros automaticamente.
@@ -32,6 +34,9 @@ O diferencial central é o funcionamento local-first: os dados financeiros perma
 
 - Interface e mensagens em português brasileiro.
 - SQLite é a fonte de verdade local; os dados financeiros principais não dependem de nuvem.
+- Um banco SQLite por usuário (isolamento físico) e um banco de contas com apenas nome de usuário e hash da senha.
+- Toda a API exige sessão; alterações exigem o cabeçalho anti-CSRF; login e cadastro têm limite de tentativas.
+- O servidor local é feito para a rede de casa (HTTP) e não deve ser exposto na internet.
 - Valores monetários são armazenados como inteiros de 64 bits em centavos.
 - Datas de negócio usam `YYYY-MM-DD` e competências usam `YYYY-MM`.
 - Registros financeiros usam exclusão lógica para preservar o histórico.
@@ -57,7 +62,7 @@ O diferencial central é o funcionamento local-first: os dados financeiros perma
 
 ## Product Principles
 
-1. Manter os dados financeiros sob controle do usuário.
+1. Manter os dados financeiros sob controle do usuário, separados por pessoa.
 2. Tornar a situação do mês compreensível em uma única visão.
 3. Permitir adoção gradual, sem cadastros obrigatórios ou dados fictícios.
 4. Preservar histórico, integridade monetária e compatibilidade do banco.

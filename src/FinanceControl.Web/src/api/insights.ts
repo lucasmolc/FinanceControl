@@ -1,5 +1,5 @@
 /** Reports, projections and market endpoints (v1.2 §2 and §4). Money is BRL cents unless noted. */
-import { request } from "./client";
+import { json, request } from "./client";
 
 export interface ReportMonth {
   month: string; income_cents: number; expense_cents: number; investment_cents: number; net_cents: number;
@@ -67,7 +67,6 @@ export interface MarketRefreshResult extends MarketData { refreshed?: { rates: n
 // R2-X-1: the insights endpoints use the shared `request` of api/client, so every answer or network failure feeds the
 // global connectivity state (offline banner, retries, refetch of the page on recovery) like the rest of the app.
 
-const json = (method: string, body?: unknown): RequestInit => ({ method, headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
 const range = (from: string, to: string) => `from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
 
 export const insightsApi = {

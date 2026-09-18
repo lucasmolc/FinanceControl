@@ -4,6 +4,7 @@ using System.Text.Json;
 using FinanceControl.Api.Tests.Support;
 using FinanceControl.Application.Ports;
 using FinanceControl.Infrastructure.Market;
+using FinanceControl.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -186,13 +187,19 @@ public sealed class MarketTests
         Assert.False((await client.GetJsonAsync("/api/market")).GetProperty("auto_refresh").GetBoolean());
         Assert.False((await client.GetJsonAsync("/api/state")).GetProperty("settings").GetProperty("market_auto_refresh").GetBoolean());
 
-        using (var scope = api.Services.CreateScope())
-            Assert.False(await scope.ServiceProvider.GetRequiredService<IFinanceUseCases>().RefreshMarketIfEnabledAsync());
+        // Como o job em segundo plano: um escopo por usuário, no banco dele.
+        async Task<bool> RefreshAsUserAsync()
+        {
+            using var scope = api.Services.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<UserDatabaseScope>().EnterAsync(1);
+            return await scope.ServiceProvider.GetRequiredService<IFinanceUseCases>().RefreshMarketIfEnabledAsync();
+        }
+
+        Assert.False(await RefreshAsUserAsync());
         Assert.Empty(api.Http.Requests);
 
         await client.SendJsonAsync(HttpMethod.Put, "/api/settings", new { market_auto_refresh = true });
-        using (var scope = api.Services.CreateScope())
-            Assert.True(await scope.ServiceProvider.GetRequiredService<IFinanceUseCases>().RefreshMarketIfEnabledAsync());
+        Assert.True(await RefreshAsUserAsync());
         Assert.Equal(12, (await client.GetJsonAsync("/api/market")).GetProperty("rates").GetArrayLength());
     }
 

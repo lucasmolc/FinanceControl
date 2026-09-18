@@ -19,7 +19,7 @@ public static class FinanceEndpoints
 
     public static IEndpointRouteBuilder MapFinanceEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
+        endpoints.MapGet("/api/health", () => Results.Ok(new { status = "ok" })).AllowAnonymous();
         endpoints.MapGet("/api/state", (IFinanceUseCases useCases) => Results.Ok(useCases.GetState()));
         endpoints.MapGet("/api/summary", (string? month, IFinanceUseCases useCases) => ToHttp(useCases.GetSummary(month), Results.Ok));
         endpoints.MapGet("/api/about", (IFinanceUseCases useCases) => Results.Ok(useCases.GetAbout()));

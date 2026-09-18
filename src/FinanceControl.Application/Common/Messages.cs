@@ -83,6 +83,15 @@ public static class Messages
     public const string MultiplierRange = "Informe um valor entre 1 e 600.";
     public const string CardRequired = "Escolha o cartão da compra.";
 
+    // Contas de usuário
+    public const string Username = "Use de 3 a 32 caracteres entre letras minúsculas, números, ponto, - e _.";
+    public const string UsernameTaken = "Este nome de usuário já está em uso.";
+    public const string PasswordLength = "A senha deve ter entre 8 e 128 caracteres.";
+    public const string InvalidCredentials = "Usuário ou senha inválidos.";
+    public const string SessionRequired = "Sua sessão expirou ou não foi iniciada. Entre novamente.";
+    public const string TooManyAttempts = "Muitas tentativas seguidas. Aguarde um minuto e tente novamente.";
+    public const string RequestRejected = "Requisição recusada.";
+
     public static string MaxLength(int length) => $"Use no máximo {length} caracteres.";
 
     /// <summary>Operação que alteraria um mês fechado (<paramref name="month"/> no formato AAAA-MM).</summary>

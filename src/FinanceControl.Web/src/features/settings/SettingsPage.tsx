@@ -13,6 +13,8 @@ import { formatDate } from "../../lib/date";
 import type { AboutInfo, Notify, PageProps, Settings } from "../../types";
 import { monthTitle, monthTotals } from "../closing/closingModel";
 import { planFigures, planFromSettings, planName } from "../plan/planModel";
+import { AccountSection } from "../auth/AccountSection";
+import { useSession } from "../auth/sessionContext";
 import { AppearanceSection } from "./AppearanceSection";
 import { PlanSection } from "./PlanSection";
 import { MobileCollapse } from "./MobileCollapse";
@@ -296,6 +298,7 @@ const SECTIONS = [
   { id: "mercado", heading: "market-title", label: "Mercado" },
   { id: "copia", heading: "backup-title", label: "Cópia de segurança" },
   { id: "fechamentos", heading: "closings-title", label: "Fechamentos" },
+  { id: "conta", heading: "account-title", label: "Conta" },
   { id: "ajuda", heading: "help-title", label: "Ajuda" },
 ] as const;
 
@@ -390,7 +393,8 @@ export function SettingsPage({ state, version, refresh, notify, notifyError, onE
   /** Action failures → error toast (MEL-28). */
   const fail = (reason: unknown) => { if (notifyError) notifyError(reason); else onError(errorMessage(reason)); };
   const hasHelp = Boolean(onReplayTour || onRevisitSetup);
-  const ids = SECTIONS.map(item => item.id as string).filter(id => id !== "ajuda" || hasHelp);
+  const hasAccount = useSession() !== null;
+  const ids = SECTIONS.map(item => item.id as string).filter(id => (id !== "ajuda" || hasHelp) && (id !== "conta" || hasAccount));
   // R3-CFG-1: "Editar plano" from the Teto field opens the plan editor and brings it into view.
   const [planEditRequest, setPlanEditRequest] = useState(0);
   const editPlan = () => {
@@ -410,6 +414,7 @@ export function SettingsPage({ state, version, refresh, notify, notifyError, onE
       <div id="settings-mercado" className="settings-anchor"><MarketSection state={state} refresh={refresh} notify={notify} onError={fail} navigate={navigate} offline={offline} /></div>
       <div id="settings-copia" className="settings-anchor"><BackupSection refresh={refresh} notify={notify} onError={fail} offline={offline} /></div>
       <div id="settings-fechamentos" className="settings-anchor"><ClosingsSection version={version} onReopenMonth={onReopenMonth} offline={offline} /></div>
+      {hasAccount && <div id="settings-conta" className="settings-anchor"><AccountSection onError={fail} /></div>}
       {hasHelp && <div id="settings-ajuda" className="settings-anchor"><HelpSection onReplayTour={onReplayTour} onRevisitSetup={onRevisitSetup} /></div>}
     </div>
   </div>;

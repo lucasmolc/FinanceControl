@@ -1,10 +1,10 @@
 @echo off
 title LMM Finance Control - servidor local (Ctrl+C para parar)
 setlocal
-set "PORTA=" & set "BANCO=" & set "HOSTS_EXTRAS="
+set "PORTA=" & set "DADOS=" & set "HOSTS_EXTRAS="
 for /f "usebackq eol=# tokens=1,* delims==" %%a in ("%~dp0servidor.conf") do set "%%a=%%b"
 if not defined PORTA set "PORTA=5074"
-if not defined BANCO set "BANCO=%~dp0..\..\src\FinanceControl.Api\Data\finance.db"
+if not defined DADOS set "DADOS=%~dp0..\..\src\FinanceControl.Api\Data"
 
 if not exist "%~dp0app\FinanceControl.Api.exe" (
   echo Aplicacao nao publicada. Execute publicar.cmd primeiro.
@@ -12,14 +12,17 @@ if not exist "%~dp0app\FinanceControl.Api.exe" (
   exit /b 1
 )
 
-rem Sem login na aplicacao: aceita apenas nomes desta maquina (protege contra DNS rebinding).
+rem Aceita apenas nomes desta maquina (protege contra DNS rebinding); a API ainda exige login.
 for /f "usebackq delims=" %%i in (`powershell -NoProfile -Command "(Get-NetIPAddress -AddressFamily IPv4 | ForEach-Object IPAddress) -join ';'"`) do set "IPS=%%i"
 set "AllowedHosts=localhost;[::1];%COMPUTERNAME%;%IPS%;%HOSTS_EXTRAS%"
 set "Urls=http://0.0.0.0:%PORTA%"
-set "DATABASE_PATH=%BANCO%"
+set "DATA_DIRECTORY=%DADOS%"
 
-echo Banco: %DATABASE_PATH%
-echo Acesse de outro dispositivo da rede: http://%COMPUTERNAME%:%PORTA%  (ou pelo IP: %IPS%)
+echo Dados: %DATA_DIRECTORY%
+echo Neste computador: http://localhost:%PORTA%
+echo Em outro PC da rede: http://%COMPUTERNAME%:%PORTA%
+echo No celular (use o IP da rede Wi-Fi):
+powershell -NoProfile -Command "Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' } | ForEach-Object { '  http://' + $_.IPAddress + ':%PORTA%  (' + $_.InterfaceAlias + ')' }"
 echo.
 cd /d "%~dp0app"
 "%~dp0app\FinanceControl.Api.exe"

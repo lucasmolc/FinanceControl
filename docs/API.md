@@ -2,6 +2,35 @@
 
 JSON em `snake_case`, dinheiro em unidades mínimas (`int64`) da moeda do registro (centavos para BRL; ver [Moedas](#moedas-v12)), datas `YYYY-MM-DD`, competências `YYYY-MM`. O servidor apara (`trim`) todos os textos.
 
+## Sessão e segurança
+
+Todas as rotas exigem sessão, exceto `GET /api/health` e as de conta abaixo. Cada usuário tem o próprio banco: todas as demais rotas leem e alteram **somente os dados do usuário da sessão**, e ids de registros de outro usuário respondem 404.
+
+| Rota | Corpo | Resposta |
+|---|---|---|
+| `POST /api/auth/register` | `{ "username", "password" }` | 201 `{ id, username }` e cookie de sessão; 400 por campo (`username`: formato ou "Este nome de usuário já está em uso."; `password`: 8 a 128 caracteres) |
+| `POST /api/auth/login` | `{ "username", "password" }` | 200 `{ id, username }` e cookie de sessão; 401 "Usuário ou senha inválidos." (mesma resposta para usuário inexistente) |
+| `POST /api/auth/logout` | — | 204, remove o cookie |
+| `GET /api/auth/me` | — | 200 `{ id, username }`; 401 sem sessão |
+
+- **Usuário:** aparado e convertido para minúsculas; 3 a 32 caracteres entre `a-z`, `0-9`, `.`, `-` e `_`.
+- **Sessão:** cookie `fc_session` (`HttpOnly`, `SameSite=Strict`), 30 dias, renovado com o uso.
+- **Alterações** (`POST`, `PUT`, `DELETE`, `PATCH`) exigem o cabeçalho `X-Requested-With: FinanceControl`; sem ele: 403 "Requisição recusada.".
+- **Limite:** 10 requisições por minuto por IP em `register` e `login`; acima disso, 429 "Muitas tentativas seguidas. Aguarde um minuto e tente novamente." com `Retry-After: 60`.
+- Respostas de `/api` levam `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` e `Referrer-Policy: no-referrer`.
+
+Exemplo (PowerShell), guardando o cookie numa sessão:
+
+```powershell
+$api = "http://localhost:5074"
+$h = @{ "X-Requested-With" = "FinanceControl" }
+Invoke-RestMethod "$api/api/auth/login" -Method Post -Headers $h -ContentType "application/json" -Body '{"username":"ana","password":"minha-senha"}' -SessionVariable s
+Invoke-RestMethod "$api/api/summary?month=2026-09" -WebSession $s
+Invoke-RestMethod "$api/api/bills" -Method Post -Headers $h -WebSession $s -ContentType "application/json" -Body '{"name":"Internet","amount_cents":9990}'
+```
+
+A `-SessionVariable` guarda o cookie e também os cabeçalhos da chamada que a criou, então as chamadas seguintes com `-WebSession $s` já enviam `X-Requested-With`. Com `curl`: `-c cookies.txt` no login, `-b cookies.txt` nas demais e `-H "X-Requested-With: FinanceControl"` nas alterações.
+
 ## Erros
 
 Todas as respostas de erro usam Problem Details com textos em português:
@@ -9,6 +38,9 @@ Todas as respostas de erro usam Problem Details com textos em português:
 | Situação | Status | Corpo |
 |---|---|---|
 | Validação | 400 | `{ "title": "Dados inválidos.", "errors": { "<campo_da_api>": ["<mensagem>"] } }` |
+| Sem sessão, sessão expirada ou revogada | 401 | `{ "title": "Sua sessão expirou ou não foi iniciada. Entre novamente." }` |
+| Alteração sem `X-Requested-With` | 403 | `{ "title": "Requisição recusada." }` |
+| Tentativas demais de login/cadastro | 429 | `{ "title": "Muitas tentativas seguidas. Aguarde um minuto e tente novamente." }` |
 | Registro inexistente ou já removido | 404 | `{ "title": "Registro não encontrado.", "status": 404 }` |
 | Rota `/api/*` desconhecida | 404 | Problem Details JSON (nunca o `index.html`) |
 | Falha inesperada | 500 | `{ "title": "Não foi possível concluir a operação." }` |
@@ -151,9 +183,9 @@ Erros em `target_id` (400): ausente → "Campo obrigatório."; não numérico ou
 - `PUT /api/settings`, `POST /api/setup`, `POST /api/setup/skip` → `{ "ok": true }`.
 - `GET /api/backup` → JSON `{ version: 3, exported_at, data: { <tabela>: [linhas] } }` (inclui `subscription_charges` desde a migração 005 e `card_invoice_payments` desde a 006; backups anteriores sem essas tabelas continuam aceitos e as deixam vazias).
 - `GET /api/backup/database` → arquivo SQLite consistente (`VACUUM INTO`), `application/vnd.sqlite3`, `lmm-finance-<AAAA-MM-DD>.db`.
-- `POST /api/backup/restore` com um documento de backup (versão 2 ou 3): valida tabelas e colunas (coluna inexistente → 400 `tabela.coluna`), grava uma cópia de segurança em `<pasta do banco>/backups/antes-da-restauracao-<AAAAMMDD-HHmmss>.db` e substitui os dados atomicamente (chaves estrangeiras verificadas antes do commit). Tabelas ausentes são esvaziadas, exceto `settings`, `exchange_rates` e `market_indicators` (mantidas como estão; v1.3). Após a carga, `sqlite_sequence` de cada tabela é ajustada para `MAX(id)` (removida nas tabelas vazias), para que o próximo registro receba `MAX(id) + 1`. Resposta: `{ ok, safety_copy, restored: { <tabela>: <linhas> } }`.
+- `POST /api/backup/restore` com um documento de backup (versão 2 ou 3): valida tabelas e colunas (coluna inexistente → 400 `tabela.coluna`), grava uma cópia de segurança em `<pasta do banco do usuário>/backups/antes-da-restauracao-<AAAAMMDD-HHmmss>.db` (`users/<id>/backups/`) e substitui os dados atomicamente (chaves estrangeiras verificadas antes do commit). Tabelas ausentes são esvaziadas, exceto `settings`, `exchange_rates` e `market_indicators` (mantidas como estão; v1.3). Após a carga, `sqlite_sequence` de cada tabela é ajustada para `MAX(id)` (removida nas tabelas vazias), para que o próximo registro receba `MAX(id) + 1`. Resposta: `{ ok, safety_copy, restored: { <tabela>: <linhas> } }`.
 
-Ao encerrar, a API executa `PRAGMA wal_checkpoint(TRUNCATE)` no banco e fecha o pool de conexões, deixando o `-wal` vazio ou ausente.
+Backup e restauração valem sempre para o banco do usuário da sessão. Ao encerrar, a API executa `PRAGMA wal_checkpoint(TRUNCATE)` em todos os bancos abertos (contas e usuários) e fecha o pool de conexões, deixando os `-wal` vazios ou ausentes.
 
 No ambiente de desenvolvimento, o contrato OpenAPI fica disponível em `/openapi/v1.json`.
 
