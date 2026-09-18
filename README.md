@@ -121,9 +121,17 @@ Para usar um computador como servidor e acessar pelo celular ou por outros PCs *
    ```powershell
    New-NetFirewallRule -DisplayName "LMM Finance Control" -Direction Inbound -Protocol TCP -LocalPort 5074 -RemoteAddress LocalSubnet -Profile Private -Action Allow
    ```
-4. Inicie com `deploy\servidor-local\iniciar.cmd` e acesse `http://NOME-DO-PC:5074` pelos outros dispositivos. Para iniciar com o Windows, crie um atalho para o `iniciar.cmd` em `shell:startup`.
+4. Inicie o servidor (scripts abaixo). No próprio computador, acesse `http://localhost:5074`; nos outros dispositivos, `http://NOME-DO-PC:5074` ou `http://IP-DO-PC:5074`. O `0.0.0.0` que aparece no log é o endereço de escuta, não um endereço para abrir no navegador.
 
-A aplicação **não tem login**: quem acessa a porta lê e altera todos os dados. Nunca encaminhe a porta no roteador. O `iniciar.cmd` aceita apenas localhost, o nome e os IPs atuais do computador (mais `HOSTS_EXTRAS`), o que bloqueia ataques de *DNS rebinding*. O servidor usa a mesma porta do `npm run dev`: rode um de cada vez. Para atualizar, pare o servidor (`Ctrl+C`) e publique de novo.
+| Script (em `deploy\servidor-local`) | O que faz |
+|---|---|
+| `iniciar.cmd` | inicia com uma janela de terminal e logs visíveis (`Ctrl+C` para parar) |
+| `segundo-plano.cmd` | inicia sem janela; logs em `servidor.log` e `servidor-erros.log` (recriados a cada início) |
+| `parar.cmd` | encerra o servidor publicado (não afeta o `npm run dev`) |
+| `adicionar-inicializacao.cmd` | inicia em segundo plano sempre que você entrar no Windows (atalho na pasta Inicializar) |
+| `remover-inicializacao.cmd` | desfaz o anterior |
+
+A aplicação **não tem login**: quem acessa a porta lê e altera todos os dados. Nunca encaminhe a porta no roteador. O `iniciar.cmd` aceita apenas localhost, o nome e os IPs atuais do computador (mais `HOSTS_EXTRAS`), o que bloqueia ataques de *DNS rebinding*; se o IP mudar, reinicie o servidor. O servidor usa a mesma porta do `npm run dev`: rode um de cada vez. Para atualizar, rode `parar.cmd`, `publicar.cmd` e inicie de novo.
 
 **Manter o servidor no ar.** Bloquear a tela (`Win+L`) ou deixar o monitor desligar não interrompe o servidor. O que interrompe:
 
@@ -131,7 +139,7 @@ A aplicação **não tem login**: quem acessa a porta lê e altera todos os dado
 |---|---|
 | Tela bloqueada ou monitor desligado | ✅ sim |
 | Suspensão ou hibernação (automática ou ao fechar a tampa) | ❌ não |
-| Sair da conta ou reiniciar | ❌ não, até entrar de novo (com o atalho em `shell:startup`, ele volta sozinho) |
+| Sair da conta ou reiniciar | ❌ não, até entrar de novo (com `adicionar-inicializacao.cmd`, ele volta sozinho) |
 
 Para não suspender quando o computador estiver na tomada, rode no PowerShell:
 
