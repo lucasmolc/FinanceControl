@@ -1,0 +1,40 @@
+# Dependências e saídas de build
+node_modules/
+dist/
+bin/
+obj/
+.dotnet/
+.dotnet-cli/
+TestResults/
+coverage/
+.vitest/
+
+# Bancos de dados e cópias de segurança (dados pessoais: nunca versionar)
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+**/Data/backups/
+data/backups/
+*.bak
+
+# Segredos e configurações locais
+.env
+.env.*
+appsettings.*.local.json
+*.pfx
+*.pem
+*.key
+.claude/settings.local.json
+
+# IDEs e sistema
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+.DS_Store
+*.log
+
+# Estado local do detector do impeccable
+.impeccable/live/

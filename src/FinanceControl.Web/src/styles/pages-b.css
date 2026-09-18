@@ -1,0 +1,317 @@
+/* Phase 2 · Pages-B (planning, wealth, catalog, history, forms). Tokens only. */
+
+/* ---------- Forms (MEL-42 controls inside Field) ---------- */
+.field-label { display: block; color: var(--text-soft); font-size: var(--text-sm); font-weight: 600; line-height: 1.35; }
+.field-group { display: grid; gap: 6px; min-width: 0; }
+.field-suggestion { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; color: var(--muted); font-size: var(--text-xs); line-height: 1.5; }
+.field-suggestion > svg { flex: none; color: var(--accent-text); }
+.field-suggestion .btn.small { min-height: 28px; padding: 2px 8px; }
+.choice-field .ui-segmented { width: 100%; }
+.choice-field .ui-radio-cards { margin-top: 2px; }
+.switch-field { padding: 2px 0; }
+.color-field .ui-colorpicker { margin-top: 2px; }
+.logo-field .ui-file-upload { margin-top: 2px; }
+.card-form-preview { display: flex; justify-content: center; padding: var(--space-3); border: 1px dashed var(--line); border-radius: var(--radius-lg); background: var(--panel-2); }
+.card-form-preview .visual-card { width: 100%; }
+.transfer-conversion { display: grid; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--accent-line); border-radius: var(--radius-md); background: var(--accent-soft); }
+.transfer-rate { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; color: var(--text-soft); font-size: var(--text-sm); font-feature-settings: var(--numeric); }
+.transfer-rate > svg { flex: none; color: var(--muted); }
+
+/* "Mais detalhes" (CR-15): optional fields folded under the essentials */
+.form-more { border: 1px solid var(--line); border-radius: var(--radius-md); background: color-mix(in srgb, var(--panel-3) 35%, transparent); }
+.form-more > summary {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px var(--space-2);
+  min-height: 44px; padding: 10px var(--space-3); border-radius: var(--radius-md);
+  cursor: pointer; list-style: none;
+}
+.form-more > summary::-webkit-details-marker { display: none; }
+.form-more > summary::before {
+  content: ""; align-self: center; width: 7px; height: 7px; margin-right: 4px;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+  transform: rotate(-45deg); transition: transform var(--duration, 160ms) var(--ease-out);
+}
+.form-more[open] > summary::before { transform: rotate(45deg); }
+.form-more > summary:hover { background: var(--row-hover); }
+.form-more > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.form-more-title { color: var(--text); font-size: var(--text-sm); font-weight: 650; }
+.form-more-summary { min-width: 0; font-size: var(--text-xs); }
+.form-more-body { padding: 0 var(--space-3) var(--space-3); }
+.form-saved { margin: 0; color: var(--positive); font-size: var(--text-sm); font-weight: 600; }
+.form-saved:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+/* R1-REC-4: an invalid field keeps a danger ring while focused (the accent ring hid the red border). */
+[aria-invalid="true"]:focus-visible, .field-invalid :focus-visible { outline-color: var(--danger); }
+.record-offline { color: var(--warning-text); font-size: var(--text-sm); }
+/* R2-REC-2: record forms open near the top, so inline errors grow the dialog downwards instead of moving it. */
+@media (min-width: 621px) {
+  .modal:has(.record-cancel) { place-items: start center; }
+  .modal:has(.record-cancel) > .modal-card { margin-top: min(8vh, 72px); max-height: calc(100dvh - min(8vh, 72px) - 40px); }
+}
+/* R1-REC-3: phones — Salvar and "Salvar e outro" side by side, Cancelar as a quiet text button below (≈ 100 px instead of 170). */
+@media (max-width: 620px) {
+  .modal-actions:has(> .record-cancel) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .modal-actions:has(> .record-cancel) > .btn.primary { grid-row: 1; grid-column: 1; }
+  .modal-actions:has(> .record-cancel) > .save-and-new { grid-row: 1; grid-column: 2; }
+  .modal-actions:has(> .record-cancel):not(:has(> .save-and-new)) > .btn.primary { grid-column: 1 / -1; }
+  .modal-actions > .record-cancel { grid-row: 2; grid-column: 1 / -1; min-height: 36px; border-color: transparent; background: transparent; color: var(--text-soft); }
+  .modal-actions > .record-offline { grid-row: 3; grid-column: 1 / -1; margin: 0; text-align: center; }
+  .save-and-new .label-drop { display: none; }
+}
+
+/* ---------- Entity cells (logo/icon + name + badges) ---------- */
+.entity-cell { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.entity-cell.compact { gap: 8px; }
+.entity-cell > .bank-logo, .entity-cell > .ui-category-icon { flex: none; }
+.entity-text { display: grid; gap: 2px; min-width: 0; }
+.entity-name { overflow-wrap: break-word; word-break: normal; font-weight: 600; }
+.entity-text small { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; }
+.tag-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+.data-table td[data-label="Situação"] small { display: block; margin-top: 4px; }
+.budget-status { display: grid; gap: 6px; min-width: 9rem; }
+/* R4-CAT-2: the "Excedido · 119% · R$ … acima" pill gets room above and below its text. */
+.budget-status > .badge { justify-self: start; padding-block: 2px; line-height: 1.35; white-space: normal; }
+.list-item > .bank-logo + .list-main { flex: 1; min-width: 0; }
+
+/* ---------- Accounts & investments ---------- */
+.wealth-card { display: flex; flex-direction: column; }
+.wealth-card-header { flex-wrap: nowrap; align-items: center; }
+.wealth-card-header > .bank-logo, .wealth-card-header > .goal-icon { flex: none; }
+.wealth-card-header > .wealth-card-title { flex: 1 1 auto; min-width: 0; }
+.wealth-card .card-actions { margin-top: auto; }
+.wealth-card .tag-row { margin-bottom: var(--space-3); }
+.wealth-rate { margin: 4px 0 0; font-size: var(--text-sm); }
+.investment-benchmark { margin: var(--space-2) 0 0; font-size: var(--text-sm); }
+.compact-value .native-value { justify-items: start; }
+.compact-value .native-value small { font-size: var(--text-sm); font-weight: 550; }
+
+/* ---------- Clickable KPI (CR-16: "Despesas sem categoria" → Lançamentos) ---------- */
+.stat-link {
+  display: inline-flex; align-items: center; gap: 6px; margin: -2px -6px; padding: 2px 6px;
+  border: 0; border-radius: var(--radius-sm); color: inherit; background: transparent;
+  font: inherit; letter-spacing: inherit; cursor: pointer;
+}
+.stat-link > svg { flex: none; transition: transform var(--duration, 160ms) var(--ease-out); }
+.stat-link:hover { background: var(--row-hover); }
+.stat-link:hover > svg { transform: translateX(2px); }
+.stat-link:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+/* R2-ASSIN-1 / R2-CAT-3: the whole KPI is the target (≥ 44 px on phones), not only the value. */
+.stat:has(> dd > .stat-link) { position: relative; border-radius: var(--radius-md); transition: background-color var(--duration, 160ms) var(--ease-out); }
+.stat:has(> dd > .stat-link):hover { background: var(--row-hover); }
+.stat-link::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.stat-link:hover { background: transparent; }
+.stat-link:focus-visible { outline: 0; }
+.stat-link:focus-visible::after { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+
+/* ---------- Contas a pagar (CR-18) ---------- */
+.data-table td.bill-actions .row-actions { min-width: 12.5rem; }
+.bill-action { min-width: 6.5rem; justify-content: center; }
+.data-table tbody tr.is-overdue td { background: color-mix(in srgb, var(--danger) 6%, transparent); }
+/* R1-BILLS-2: card invoices above the bills, each list under its own quiet title. */
+.bills-invoices, .bills-list { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); }
+.bills-invoices > .section-title, .bills-list > .section-title { margin: 0; }
+.data-table td.col-status .badge { white-space: nowrap; }
+.data-table th.col-status { min-width: 9.5rem; }
+/* R1-BILLS-6: between tablet and wide desktop the category column gives its width to Situação. */
+@media (min-width: 621px) and (max-width: 1199px) {
+  .bills-list .data-table th:nth-child(2), .bills-list .data-table td:nth-child(2) { display: none; }
+}
+
+/* ---------- Investimentos (CR-25) ---------- */
+.allocation { display: grid; gap: var(--space-3); margin-bottom: var(--space-4); }
+.allocation-header { align-items: center; margin: 0; }
+.allocation-header .section-title { margin: 0; }
+.allocation-bar { display: flex; gap: 2px; height: 14px; overflow: hidden; border-radius: var(--radius-pill); background: var(--track, var(--panel-3)); }
+.allocation-segment { min-width: 4px; background: var(--series); }
+.allocation-legend { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: var(--space-2) var(--space-4); margin: 0; padding: 0; list-style: none; }
+.allocation-legend li { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; font-size: var(--text-sm); }
+.allocation-legend .legend-swatch { align-self: center; }
+.allocation-label { overflow: hidden; color: var(--text-soft); text-overflow: ellipsis; white-space: nowrap; }
+.allocation-percent { color: var(--text); font-variant-numeric: tabular-nums; }
+/* R2-INV-2: share and value read together ("70,8% · R$ 19.874,30"), next to the label. */
+.allocation-value { font-size: var(--text-xs); white-space: nowrap; }
+.wealth-toolbar { justify-content: flex-end; }
+.investment-benchmark[title] { cursor: help; }
+
+/* ---------- Goals (MEL-43 reserve) ---------- */
+.goal-amounts { display: grid; gap: 0; }
+.goal-amounts .compact-value { margin: 0; }
+.goal-amounts p { margin: 0; font-size: var(--text-sm); }
+/* R2-METAS-3: goal cards carry a visible rim, so they take a short lift instead of the wide 40 px card shadow. */
+.goal-card { display: flex; flex-direction: column; box-shadow: 0 1px 0 var(--glass-highlight) inset, 0 6px 12px -8px rgb(var(--shadow-rgb) / 0.45); }
+.goal-card .card-actions { margin-top: auto; }
+.goal-icon { display: grid; width: 40px; height: 40px; place-items: center; border-radius: var(--radius-md); color: var(--accent-text); background: var(--accent-soft); }
+.goal-card.is-achieved .goal-icon { color: var(--gold); background: var(--gold-soft); }
+/* R1-METAS-2: the freedom number stands apart from the short-term goals. */
+.goal-featured { margin-bottom: var(--space-4); }
+.goal-card.is-featured { border-color: var(--gold-line); }
+/* R2-METAS-2: value and "x% concluído · Faltam" on one line, the bar across the whole card, the explanation as a hint. */
+.goal-card.is-featured .goal-deadline { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+@media (min-width: 900px) {
+  .goal-card.is-featured { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: var(--space-6); align-items: end; }
+  .goal-card.is-featured > * { grid-column: 1 / -1; }
+  .goal-card.is-featured > .goal-amounts { grid-column: 1; }
+  .goal-card.is-featured > .goal-percent { grid-column: 2; margin: 0 0 4px; text-align: right; }
+  .goal-card.is-featured > .ui-progress { order: 1; }
+  .goal-card.is-featured > .goal-deadline, .goal-card.is-featured > .field-hint, .goal-card.is-featured > .card-actions { order: 2; }
+}
+.goal-card .ui-progress { margin: var(--space-2) 0 var(--space-1); }
+.reserve-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--space-2); margin: 0 0 var(--space-2); padding: 10px var(--space-3); border: 1px solid var(--gold-line); border-radius: var(--radius-md); background: color-mix(in srgb, var(--gold-soft) 55%, transparent); }
+.reserve-row small { flex: 1 1 14rem; margin: 0; }
+.reserve-row .btn.small { margin-left: auto; }
+
+/* ---------- Cards (MEL-35 visual card + limits; CR-21 compact card beside the numbers) ---------- */
+.cards-grid { align-items: start; }
+/* R2-CARD-1: art + best day + limits on one side, the usage block on the other (no empty band under the art). */
+.credit-card-side { display: grid; align-content: start; gap: var(--space-3); min-width: 0; }
+.credit-card-side > .visual-card { justify-self: start; }
+.credit-card-best { margin: 0; }
+.credit-card-side .card-values { margin-top: 0; }
+.card-overdue-jump {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 32px; margin: 4px 0 0; padding: 2px 10px;
+  border: 1px solid var(--danger-line); border-radius: var(--radius-pill); color: var(--danger-text, var(--text));
+  background: var(--danger-soft); font: inherit; font-size: var(--text-sm); font-weight: 600; cursor: pointer;
+}
+.card-overdue-jump:hover { background: color-mix(in srgb, var(--danger) 18%, transparent); }
+.card-overdue-jump:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.invoice-panel:focus { outline: none; }
+.invoice-panel { scroll-margin-top: var(--space-6); }
+@media (min-width: 621px) { .card-overdue-jump { display: none; } }
+@media (max-width: 620px) { .card-overdue-jump { min-height: 44px; } }
+/* R2-CARD-2: the invoice line under its title reads as a caption (13 px), below the 16 px values. */
+.invoice-block-text > p.muted, .invoice-item .list-main > small { font-size: var(--text-sm); }
+.credit-card-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-bottom: var(--space-2); }
+.credit-card-body > .visual-card { justify-self: start; }
+.credit-card-details { gap: var(--space-3); }
+.credit-card-details .card-values .compact-value { margin: 4px 0 0; }
+.card-limit { display: grid; gap: 8px; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--panel-2); }
+.card-limit-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); font-size: var(--text-sm); }
+@media (min-width: 1360px) {
+  /* R3-CARD-3: the art is centred against the limits block, so neither column ends 60–80 px before the other. */
+  /* R4-CARD-1: top-aligned — centring left ~50 px of empty space between the card name and the art. */
+  .cards-grid .credit-card-body { grid-template-columns: minmax(0, 212px) minmax(0, 1fr); align-items: start; }
+  .cards-grid .credit-card-side > .visual-card { width: 212px; }
+}
+@media (min-width: 621px) and (max-width: 1359px) {
+  .credit-card-side > .visual-card.is-compact { width: 100%; max-width: 260px; }
+}
+@media (max-width: 620px) {
+  /* A slim band on phones: issuer, network, name and due day, without the decorative chip. */
+  .credit-card-tile .visual-card.is-compact { max-width: none; aspect-ratio: auto; grid-template-rows: auto auto; gap: var(--space-2); }
+  .credit-card-side > .visual-card { justify-self: stretch; }
+  .credit-card-tile .visual-card.is-compact .visual-card-chip { display: none; }
+  .credit-card-tile .card-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+/* The tile header already names the card: its compact face keeps issuer, network and dates. */
+.credit-card-tile .visual-card.is-compact .visual-card-name { display: none; }
+.credit-card-tile .visual-card.is-compact .visual-card-bottom { justify-content: flex-end; }
+.missing-rate-note { margin: 0; color: var(--warning-text); }
+
+/* ---------- Card invoices (CR-05: overdue first, current, the rest folded) ---------- */
+.invoice-block { display: grid; gap: var(--space-2); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--panel-2); }
+.invoice-block p { margin: 0; }
+.invoice-block-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: var(--space-2) var(--space-3); }
+.invoice-block-text { display: grid; gap: 2px; min-width: 0; flex: 1 1 14rem; }
+.invoice-block-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.invoice-block .row-actions { flex-wrap: wrap; justify-content: flex-start; gap: var(--space-2); }
+.invoice-block.is-vencida { border-color: var(--danger-line); background: linear-gradient(180deg, var(--danger-soft), transparent 85%), var(--panel-2); }
+.invoice-block.is-fechada { border-color: var(--warning-line); background: linear-gradient(180deg, var(--warning-soft), transparent 85%), var(--panel-2); }
+.invoice-block.is-atual { border-color: var(--accent-line); background: linear-gradient(180deg, var(--accent-soft), transparent 80%), var(--panel-2); }
+.invoice-more { border-top: 1px solid var(--line); }
+.invoice-more > summary { display: flex; align-items: center; gap: 6px; min-height: 40px; color: var(--accent-text, var(--accent)); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+/* R4-CARD-2: the folded list reads as a link ("Ver 1 fatura futura ›"), not as plain text. */
+.invoice-more > summary:hover { text-decoration: underline; text-underline-offset: 3px; }
+.invoice-more-chevron { transition: transform var(--duration, 160ms) var(--ease-out); }
+.invoice-more[open] .invoice-more-chevron { transform: rotate(90deg); }
+.invoice-more > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+.invoice-more[open] > summary { margin-bottom: var(--space-1); }
+
+/* ---------- History drawer (CR-20: description first, kind as badge, month headers, balance after) ---------- */
+.history-summary { padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--panel-2); }
+.history-summary p { margin: 0; }
+.history-line { display: grid; gap: 3px; min-width: 0; }
+.history-line b { overflow-wrap: break-word; }
+.history-line .tag-row { font-size: var(--text-xs); }
+.history-line .badge { font-size: var(--text-2xs); }
+.history-table .data-table td:first-child { color: var(--text-soft); white-space: nowrap; }
+
+/* ---------- Lançamentos em lote (CR-16) ---------- */
+.bulk-hint {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3);
+  margin: 0 0 var(--space-3); padding: 10px var(--space-4);
+  border: 1px solid var(--warning-line, var(--line)); border-radius: var(--radius-md);
+  color: var(--text-soft); background: color-mix(in srgb, var(--warning-soft) 60%, transparent);
+  font-size: var(--text-sm);
+}
+.bulk-hint > svg { flex: none; color: var(--warning); }
+.bulk-hint > span { flex: 1 1 16rem; min-width: 0; }
+.color-custom-toggle { justify-self: start; margin-top: 2px; }
+
+/* R1-CONTAS-1: automatic debits still ahead and the projected balance, per account. */
+.account-outlook { display: grid; gap: 4px; margin: var(--space-2) 0 var(--space-3); padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--panel-2); font-size: var(--text-sm); }
+.account-outlook-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--space-2); }
+.account-outlook small { font-size: var(--text-xs); line-height: 1.45; }
+/* R2-CONTAS-2: an account without movements or payments ahead keeps its own height (no empty band above the actions). */
+.accounts-grid { align-items: start; }
+.account-invoices-note { max-width: 65ch; margin: 0 0 var(--space-3); }
+
+/* R1-CARD-2/3: the invoice split under the limit; section titles with more space above than below. */
+.card-limit-split { margin: 0; font-size: var(--text-sm); }
+.card-limit-split b { color: var(--text); }
+.credit-card-tile > .card-section-title, .invoice-panel > h4.label { margin: var(--space-5) 0 var(--space-2); }
+.invoice-overdue-note { margin: 0; color: var(--danger-text, var(--text-soft)); font-size: var(--text-sm); }
+
+/* R1-CAT-1/2: plan buckets against their limits, the inline bucket select and the "sem balde" filter. */
+.plan-buckets { display: grid; gap: var(--space-2); margin: 0 0 var(--space-5); padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--panel-2); }
+.plan-buckets > .section-title { margin: 0; }
+/* R2-CAT-1: three columns (fixos, lazer, investimento mínimo), each with its bar. */
+.plan-bucket-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: var(--space-4) var(--space-5); margin: 0; padding: 0; list-style: none; }
+.plan-bucket { display: grid; align-content: start; gap: 6px; min-width: 0; }
+.plan-bucket-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px var(--space-2); }
+.plan-bucket-name { color: var(--text); font-weight: 650; }
+.plan-bucket-amount { font-size: var(--text-sm); font-feature-settings: var(--numeric); font-variant-numeric: tabular-nums; }
+.plan-bucket-amount b { color: var(--text); font-size: var(--text-base); }
+.plan-bucket-foot { font-size: var(--text-xs); line-height: 1.45; }
+.plan-bucket-foot .negative { color: var(--danger-text); }
+.plan-bucket-note { display: flex; flex-wrap: wrap; align-items: center; gap: 4px var(--space-2); margin: 0; font-size: var(--text-sm); }
+.bucket-select { min-width: 10rem; }
+.filter-chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: 2px 4px 2px var(--space-3); border: 1px solid var(--accent-line); border-radius: var(--radius-pill); color: var(--text-soft); background: var(--accent-soft); font-size: var(--text-sm); }
+
+/* R1-ASSIN-1/3: pending charges stand out; the card name keeps one line. */
+.data-table tbody tr.is-pending td { background: color-mix(in srgb, var(--warning) 5%, transparent); }
+.card-name-cell { max-width: 12rem; }
+.card-name-text { overflow: hidden; min-width: 0; text-overflow: ellipsis; white-space: nowrap; }
+.stat-link[aria-pressed="true"] { background: var(--row-hover); }
+
+/* R1-BILLS-4 / R1-ASSIN-1: the row's main action on phones, on its own line under the text (aligned after the logo). */
+.compact-cta { display: flex; gap: var(--space-2); padding-left: 38px; }
+
+/* R3 decision 4 (R3-CAT-1, R3-ASSIN-1, R3-INV-2): the KPI links and the A–Z toggle are full 44 px targets on touch; the
+   negative block margin keeps the KPI value line where it was. */
+@media (pointer: coarse), (max-width: 620px) {
+  .stat-link { min-height: 44px; margin-block: -10px; }
+  .wealth-toolbar .segmented button { min-width: 44px; }
+}
+
+/* R3-LANC-2: offline with nothing loaded, one quiet line says what is missing (the global banner owns the retry). */
+.page-offline-note { margin: 0 0 var(--space-3); color: var(--text-soft); font-size: var(--text-sm); }
+
+/* R3-METAS-3 / R3-CONTAS-2: progress, deadline and last-movement lines are secondary — smaller than the amounts. */
+.goal-card .goal-percent, .goal-card .goal-deadline { margin: 0; font-size: var(--text-sm); }
+.goal-card .goal-deadline { color: var(--text-soft); }
+.account-last-move { margin: 0; font-size: var(--text-sm); }
+
+/* R3-ASSIN-2 / R3-CARD-2: the KPI's action on its own line; the card's subscription total as a secondary line. */
+.stat-hint-action { display: block; color: var(--accent-text); font-weight: 600; }
+.card-subs-total { margin: 0; color: var(--text-soft); font-size: var(--text-sm); }
+.card-subs-total b { color: var(--text); }
+
+/* R3-REC-2: the ways out of a closed-month date, right under the field. R3-REC-3: one label box inside the button. */
+.closed-month-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: calc(var(--space-2) * -1); }
+/* R4-REC-3: while the form grid has two columns, the actions sit under the Data field (the right column), next to the
+   message they resolve, instead of under Valor. */
+@media (min-width: 981px) {
+  .form-grid:has(> :last-child [name="date"]) + .closed-month-actions { margin-left: calc(50% + var(--space-3) / 2); }
+}
+.btn-label { display: inline; white-space: nowrap; }
+
+/* R4-METAS-2: "Automática" / "Valor manual" is information, not an achievement — neutral, never the gold of "Meta atingida". */
+.goal-card .reserve-row .reserve-badge { border-color: var(--line-strong); color: var(--text-soft); background: var(--panel-3); }

@@ -1,0 +1,155 @@
+/* LMM Finance Control v1.2 · themes and accents (generated from the design team's theme source; values verified
+   for WCAG AA in every theme × accent — see DESIGN.md "Contrast"). Edit by hand only with a re-run of the contrast check.
+   Themes set surfaces, text, signals and the chart hue ring (--hue-*); accents set --accent* and rotate --chart-1…8 so the
+   accent leads the palette. Default (no attribute) = noite + esmeralda. "sistema" follows prefers-color-scheme. */
+
+:root,
+:root[data-theme="noite"],
+:root[data-theme="sistema"] {
+  color-scheme: dark;
+  --bg: #05080e; --panel: #0a0f17; --panel-2: #0e1520; --panel-3: #16202e; --card-end: #0a1019;
+  --field: #070b12; --field-border: #5a6983; --field-border-hover: #7282a0;
+  --line: #1c2636; --line-strong: #2f3c52; --line-hover: #435373;
+  --text: #f2f5f9; --text-soft: #cad3df; --muted: #9ca9bc; --placeholder: #8492a8;
+  --positive: #34d399; --danger: #ff7d87; --warning: #f5a524; --gold: #e8c468; --money-green: #2bd48f; --info: #7cc4ff;
+  --shadow-rgb: 0 0 0; --mesh-a: 22%; --mesh-b: 12%;
+  --hue-blue: #5d80ef; --hue-emerald: #03af73; --hue-violet: #9a6cdf; --hue-orange: #da6c1e; --hue-cyan: #00a5c1; --hue-gold: #b68e05; --hue-pink: #d95c9a; --hue-lime: #72a62a;
+}
+:root[data-theme="esmeralda"] {
+  color-scheme: dark;
+  --bg: #030c09; --panel: #06130e; --panel-2: #091a14; --panel-3: #10281f; --card-end: #06140f;
+  --field: #040e0a; --field-border: #4f7867; --field-border-hover: #6b9483;
+  --line: #153126; --line-strong: #244a3a; --line-hover: #34604d;
+  --text: #eefaf4; --text-soft: #c3ded2; --muted: #95b8a8; --placeholder: #80a494;
+  --positive: #3ee0a0; --danger: #ff8189; --warning: #f5a524; --gold: #e9c86c; --money-green: #3ee0a0; --info: #7cd3ff;
+  --shadow-rgb: 0 6 3; --mesh-a: 18%; --mesh-b: 10%;
+  --hue-blue: #5d80ef; --hue-emerald: #03af73; --hue-violet: #9a6cdf; --hue-orange: #da6c1e; --hue-cyan: #00a5c1; --hue-gold: #b68e05; --hue-pink: #d95c9a; --hue-lime: #72a62a;
+}
+:root[data-theme="ouro"] {
+  color-scheme: dark;
+  --bg: #0c0905; --panel: #120e08; --panel-2: #18130b; --panel-3: #241d12; --card-end: #120e08;
+  --field: #0b0804; --field-border: #7b6b4d; --field-border-hover: #978664;
+  --line: #2a2316; --line-strong: #433824; --line-hover: #5a4b30;
+  --text: #fbf6ea; --text-soft: #e6dbc5; --muted: #b8aa8f; --placeholder: #a09379;
+  --positive: #45d49b; --danger: #ff8479; --warning: #f59e2a; --gold: #f0cc6e; --money-green: #45d49b; --info: #8fcaf5;
+  --shadow-rgb: 6 3 0; --mesh-a: 12%; --mesh-b: 16%;
+  --hue-blue: #5d80ef; --hue-emerald: #03af73; --hue-violet: #9a6cdf; --hue-orange: #da6c1e; --hue-cyan: #00a5c1; --hue-gold: #b68e05; --hue-pink: #d95c9a; --hue-lime: #72a62a;
+}
+:root[data-theme="grafite"] {
+  color-scheme: dark;
+  --bg: #09090b; --panel: #111113; --panel-2: #161619; --panel-3: #202024; --card-end: #111113;
+  --field: #0b0b0d; --field-border: #64646e; --field-border-hover: #80808a;
+  --line: #26262b; --line-strong: #3a3a42; --line-hover: #4f4f59;
+  --text: #f4f4f5; --text-soft: #d4d4d8; --muted: #a3a3ad; --placeholder: #8d8d97;
+  --positive: #34d399; --danger: #fb7185; --warning: #f5a524; --gold: #e3c270; --money-green: #34d399; --info: #93c5fd;
+  --shadow-rgb: 0 0 0; --mesh-a: 14%; --mesh-b: 8%;
+  --hue-blue: #5d80ef; --hue-emerald: #03af73; --hue-violet: #9a6cdf; --hue-orange: #da6c1e; --hue-cyan: #00a5c1; --hue-gold: #b68e05; --hue-pink: #d95c9a; --hue-lime: #72a62a;
+}
+:root[data-theme="claro"] {
+  color-scheme: light;
+  --bg: #f2f5f1; --panel: #fafbf9; --panel-2: #ffffff; --panel-3: #e9eee8; --card-end: #f7f9f6;
+  --field: #ffffff; --field-border: #7b8980; --field-border-hover: #5f6d64;
+  --line: #dde4dd; --line-strong: #c2ccc4; --line-hover: #a6b2a9;
+  --text: #0c1511; --text-soft: #2e3c35; --muted: #55635b; --placeholder: #5f6d65;
+  --positive: #036c48; --danger: #c0283a; --warning: #9a5800; --gold: #865f00; --money-green: #036c48; --info: #1d64b8;
+  --shadow-rgb: 16 32 24; --mesh-a: 12%; --mesh-b: 14%;
+  --hue-blue: #405ec9; --hue-emerald: #008b52; --hue-violet: #7444b4; --hue-orange: #cc6004; --hue-cyan: #008ba6; --hue-gold: #a88000; --hue-pink: #be4282; --hue-lime: #5f9205;
+}
+
+/* Accents on dark themes (default: esmeralda) */
+:root,
+:root[data-accent="esmeralda"] {
+  --accent: #3ddc97; --accent-strong: #2fd08f; --accent-strong-hover: #26bb7f; --on-accent: #03140d; --focus-ring: #6ee7b7;
+  --chart-1: var(--hue-emerald); --chart-2: var(--hue-violet); --chart-3: var(--hue-orange); --chart-4: var(--hue-cyan); --chart-5: var(--hue-gold); --chart-6: var(--hue-pink); --chart-7: var(--hue-lime); --chart-8: var(--hue-blue);
+}
+:root[data-accent="indigo"] {
+  --accent: #8f9bff; --accent-strong: #5b67ea; --accent-strong-hover: #4d59dc; --on-accent: #ffffff; --focus-ring: #a6afff;
+  --chart-1: var(--hue-blue); --chart-2: var(--hue-emerald); --chart-3: var(--hue-violet); --chart-4: var(--hue-orange); --chart-5: var(--hue-cyan); --chart-6: var(--hue-gold); --chart-7: var(--hue-pink); --chart-8: var(--hue-lime);
+}
+:root[data-accent="ouro"] {
+  --accent: #e9c46a; --accent-strong: #e6bb4f; --accent-strong-hover: #d6a93b; --on-accent: #1b1304; --focus-ring: #f1d68f;
+  --chart-1: var(--hue-gold); --chart-2: var(--hue-pink); --chart-3: var(--hue-lime); --chart-4: var(--hue-blue); --chart-5: var(--hue-emerald); --chart-6: var(--hue-violet); --chart-7: var(--hue-orange); --chart-8: var(--hue-cyan);
+}
+:root[data-accent="violeta"] {
+  --accent: #b9a2ff; --accent-strong: #7b5cf0; --accent-strong-hover: #6c4ce3; --on-accent: #ffffff; --focus-ring: #c9b8ff;
+  --chart-1: var(--hue-violet); --chart-2: var(--hue-orange); --chart-3: var(--hue-cyan); --chart-4: var(--hue-gold); --chart-5: var(--hue-pink); --chart-6: var(--hue-lime); --chart-7: var(--hue-blue); --chart-8: var(--hue-emerald);
+}
+:root[data-accent="ciano"] {
+  --accent: #4fd4e8; --accent-strong: #2bc3dc; --accent-strong-hover: #1eafc7; --on-accent: #03161b; --focus-ring: #86e3f1;
+  --chart-1: var(--hue-cyan); --chart-2: var(--hue-gold); --chart-3: var(--hue-pink); --chart-4: var(--hue-lime); --chart-5: var(--hue-blue); --chart-6: var(--hue-emerald); --chart-7: var(--hue-violet); --chart-8: var(--hue-orange);
+}
+:root[data-accent="rosa"] {
+  --accent: #ff90c1; --accent-strong: #c2336c; --accent-strong-hover: #ad2a5f; --on-accent: #ffffff; --focus-ring: #ffb3d4;
+  --chart-1: var(--hue-pink); --chart-2: var(--hue-lime); --chart-3: var(--hue-blue); --chart-4: var(--hue-emerald); --chart-5: var(--hue-violet); --chart-6: var(--hue-orange); --chart-7: var(--hue-cyan); --chart-8: var(--hue-gold);
+}
+
+/* Accents on the light theme (stronger steps for text contrast on white) */
+:root[data-theme="claro"],
+:root[data-theme="claro"][data-accent="esmeralda"] {
+  --accent: #047857; --accent-strong: #047857; --accent-strong-hover: #03664a; --on-accent: #ffffff; --focus-ring: #047857;
+}
+:root[data-theme="claro"][data-accent="indigo"] {
+  --accent: #4450d4; --accent-strong: #4450d4; --accent-strong-hover: #3842bf; --on-accent: #ffffff; --focus-ring: #4450d4;
+}
+:root[data-theme="claro"][data-accent="ouro"] {
+  --accent: #7d5800; --accent-strong: #d9a834; --accent-strong-hover: #c79624; --on-accent: #1b1304; --focus-ring: #7d5800;
+}
+:root[data-theme="claro"][data-accent="violeta"] {
+  --accent: #6a3dd4; --accent-strong: #6a3dd4; --accent-strong-hover: #5a30bf; --on-accent: #ffffff; --focus-ring: #6a3dd4;
+}
+:root[data-theme="claro"][data-accent="ciano"] {
+  --accent: #0b6f8a; --accent-strong: #0b6f8a; --accent-strong-hover: #095e75; --on-accent: #ffffff; --focus-ring: #0b6f8a;
+}
+:root[data-theme="claro"][data-accent="rosa"] {
+  --accent: #b8175a; --accent-strong: #b8175a; --accent-strong-hover: #a0124e; --on-accent: #ffffff; --focus-ring: #b8175a;
+}
+
+/* "sistema" on a light OS = claro */
+@media (prefers-color-scheme: light) {
+  :root[data-theme="sistema"] {
+    color-scheme: light;
+    --bg: #f2f5f1; --panel: #fafbf9; --panel-2: #ffffff; --panel-3: #e9eee8; --card-end: #f7f9f6;
+    --field: #ffffff; --field-border: #7b8980; --field-border-hover: #5f6d64;
+    --line: #dde4dd; --line-strong: #c2ccc4; --line-hover: #a6b2a9;
+    --text: #0c1511; --text-soft: #2e3c35; --muted: #55635b; --placeholder: #5f6d65;
+    --positive: #036c48; --danger: #c0283a; --warning: #9a5800; --gold: #865f00; --money-green: #036c48; --info: #1d64b8;
+    --shadow-rgb: 16 32 24; --mesh-a: 12%; --mesh-b: 14%;
+    --hue-blue: #405ec9; --hue-emerald: #008b52; --hue-violet: #7444b4; --hue-orange: #cc6004; --hue-cyan: #008ba6; --hue-gold: #a88000; --hue-pink: #be4282; --hue-lime: #5f9205;
+  }
+  :root[data-theme="sistema"],
+  :root[data-theme="sistema"][data-accent="esmeralda"] {
+    --accent: #047857; --accent-strong: #047857; --accent-strong-hover: #03664a; --on-accent: #ffffff; --focus-ring: #047857;
+  }
+  :root[data-theme="sistema"][data-accent="indigo"] {
+    --accent: #4450d4; --accent-strong: #4450d4; --accent-strong-hover: #3842bf; --on-accent: #ffffff; --focus-ring: #4450d4;
+  }
+  :root[data-theme="sistema"][data-accent="ouro"] {
+    --accent: #7d5800; --accent-strong: #d9a834; --accent-strong-hover: #c79624; --on-accent: #1b1304; --focus-ring: #7d5800;
+  }
+  :root[data-theme="sistema"][data-accent="violeta"] {
+    --accent: #6a3dd4; --accent-strong: #6a3dd4; --accent-strong-hover: #5a30bf; --on-accent: #ffffff; --focus-ring: #6a3dd4;
+  }
+  :root[data-theme="sistema"][data-accent="ciano"] {
+    --accent: #0b6f8a; --accent-strong: #0b6f8a; --accent-strong-hover: #095e75; --on-accent: #ffffff; --focus-ring: #0b6f8a;
+  }
+  :root[data-theme="sistema"][data-accent="rosa"] {
+    --accent: #b8175a; --accent-strong: #b8175a; --accent-strong-hover: #a0124e; --on-accent: #ffffff; --focus-ring: #b8175a;
+  }
+}
+
+/* Currency badges (MEL-36): fill + glyph ink (≥ 4.5:1), identical in every theme */
+:root {
+  --currency-brl: #0f7a43; --on-currency-brl: #ffffff;
+  --currency-usd: #2c5f8a; --on-currency-usd: #ffffff;
+  --currency-eur: #1f3fae; --on-currency-eur: #ffffff;
+  --currency-gbp: #7a1f3d; --on-currency-gbp: #ffffff;
+  --currency-jpy: #bc002d; --on-currency-jpy: #ffffff;
+  --currency-chf: #d52b1e; --on-currency-chf: #ffffff;
+  --currency-cad: #b3122b; --on-currency-cad: #ffffff;
+  --currency-aud: #012169; --on-currency-aud: #ffffff;
+  --currency-ars: #6cace4; --on-currency-ars: #0b0f14;
+  --currency-btc: #f7931a; --on-currency-btc: #0b0f14;
+  --currency-eth: #627eea; --on-currency-eth: #0b0f14;
+  --currency-sol: #9945ff; --on-currency-sol: #ffffff;
+  --currency-usdt: #26a17b; --on-currency-usdt: #0b0f14;
+}

@@ -1,0 +1,21 @@
+{
+  "core": [
+    "setup inicial opcional e revisável",
+    "painel mensal com navegação entre meses",
+    "lançamentos por mês com busca, filtro, edição e vínculo a conta bancária",
+    "contas a pagar com checklist mensal que gera a despesa ao pagar",
+    "metas, aportes, histórico e estorno",
+    "investimentos, movimentações, histórico e estorno",
+    "cartões com limites e assinaturas vinculadas",
+    "contas bancárias, transferências, extrato e estorno",
+    "categorias com orçamento e situação do limite",
+    "assinaturas com custo mensal equivalente",
+    "edição de todos os registros e desfazer remoções",
+    "configurações com validação monetária",
+    "cópia de segurança JSON e SQLite, com restauração",
+    "tour guiado automático no primeiro uso"
+  ],
+  "architecture": "Hexagonal: Domain, Application, Infrastructure, API e Web",
+  "data": "SQLite local (src/FinanceControl.Api/Data/finance.db via scripts npm) com migrações versionadas",
+  "privacy": "Sem dependência obrigatória de nuvem; API restrita a hosts locais"
+}

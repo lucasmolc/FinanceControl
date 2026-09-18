@@ -1,0 +1,27 @@
+{
+  "name": "lmm-finance-control",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "src/FinanceControl.Web"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others -n API,WEB -c blue,magenta \"dotnet run --project src/FinanceControl.Api\" \"npm run dev --workspace @lmm/finance-control-web\"",
+    "dev:api": "dotnet run --project src/FinanceControl.Api",
+    "dev:web": "npm run dev --workspace @lmm/finance-control-web",
+    "start": "dotnet run --project src/FinanceControl.Api --configuration Release --no-launch-profile",
+    "build": "npm run build --workspace @lmm/finance-control-web && dotnet build FinanceControl.sln --configuration Release",
+    "test": "npm run test --workspace @lmm/finance-control-web && dotnet test FinanceControl.sln --configuration Release",
+    "lint": "npm run lint --workspace @lmm/finance-control-web",
+    "check": "npm run lint && npm run test && npm run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

@@ -1,0 +1,17 @@
+/* Dev-only component gallery (#/componentes) */
+.ui-gallery { display: grid; gap: var(--space-4); min-width: 0; }
+.ui-gallery-toolbar { position: sticky; top: var(--space-2); z-index: 10; display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3) var(--space-5); padding: var(--space-3) var(--space-4); }
+.ui-gallery-section { min-width: 0; }
+.ui-gallery-note { margin: calc(var(--space-2) * -1) 0 var(--space-3); font-size: var(--text-sm); }
+.ui-gallery-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: var(--space-3); }
+.ui-gallery-demo { display: grid; align-content: start; gap: var(--space-2); min-width: 0; padding: var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--panel); }
+.ui-gallery-demo.is-wide { grid-column: 1 / -1; }
+.ui-gallery-label { margin: 0; color: var(--muted); font-size: var(--text-2xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.ui-gallery-stage { display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--space-3); min-width: 0; }
+.ui-gallery-stage > .field, .ui-gallery-stage > .ui-range-field, .ui-gallery-stage > .ui-file-upload, .ui-gallery-stage > .ui-search, .ui-gallery-stage > .ui-progress, .ui-gallery-stage > .ui-skeleton-group:first-child { flex: 1 1 240px; }
+.ui-gallery-stage > .ui-alert, .ui-gallery-stage > .ui-data-table, .ui-gallery-stage > .ui-tabs, .ui-gallery-stage > .ui-accordion, .ui-gallery-stage > .ui-radio-cards, .ui-gallery-stage > .ui-pagination, .ui-gallery-stage > .ui-stepper, .ui-gallery-stage > .ui-gallery-grid, .ui-gallery-stage > .ui-gallery-group, .ui-gallery-stage > .ui-gallery-swatches { flex: 1 1 100%; }
+.ui-gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: var(--space-3); }
+.ui-gallery-swatches { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); }
+.ui-gallery-inline { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.ui-gallery-inline > small { margin: 0; color: var(--text-soft); }
+.ui-gallery-group + .ui-gallery-group { margin-top: var(--space-3); }

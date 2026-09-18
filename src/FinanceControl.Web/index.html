@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="Controle financeiro pessoal, privado e local-first." />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#05080e" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="application-name" content="LMM Finance" />
+    <meta name="apple-mobile-web-app-title" content="LMM Finance" />
+    <title>LMM Finance Control</title>
+    <!-- First paint before CSS/JS: night canvas; main.tsx applies the cached theme (localStorage "lmm-ui") before render. -->
+    <style>html { color-scheme: dark; background: #05080e; } html[data-theme="claro"] { color-scheme: light; background: #f2f5f1; } @media (prefers-color-scheme: light) { html[data-theme="sistema"] { color-scheme: light; background: #f2f5f1; } }</style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

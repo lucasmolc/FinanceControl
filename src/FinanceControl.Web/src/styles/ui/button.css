@@ -1,0 +1,17 @@
+/* Button / IconButton — extend the legacy .btn / .icon-btn look (sizes, link variant, loading). */
+.ui-btn { position: relative; }
+.ui-btn.size-lg { min-height: 48px; padding: 11px var(--space-5); border-radius: var(--radius-md); font-size: var(--text-base); }
+.ui-btn.full-width { display: flex; width: 100%; }
+.ui-btn.link { min-height: 0; padding: 2px 0; border-color: transparent; background: transparent; color: var(--accent-text, var(--accent)); text-decoration: underline; text-underline-offset: 3px; }
+.ui-btn.link:hover { border-color: transparent; background: transparent; color: var(--text); }
+.ui-btn.is-loading { cursor: progress; }
+.ui-btn.is-loading:disabled { opacity: 0.8; }
+.ui-btn-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.ui-icon-btn.size-sm { width: 28px; height: 28px; border-radius: var(--radius-sm); }
+.ui-icon-btn.size-lg { width: 42px; height: 42px; border-radius: var(--radius-md); }
+.ui-icon-btn.variant-outline { border-color: var(--line-strong); color: var(--text-soft); }
+.ui-icon-btn.variant-solid { border-color: var(--line-strong); color: var(--text); background: var(--panel-3); }
+.ui-icon-btn.accent { color: var(--accent-text, var(--accent)); }
+.ui-icon-btn.accent:hover { border-color: var(--accent-line); background: var(--accent-soft); }
+.ui-icon-btn[aria-pressed="true"] { border-color: var(--accent-line); color: var(--accent-text, var(--accent)); background: var(--accent-soft); }

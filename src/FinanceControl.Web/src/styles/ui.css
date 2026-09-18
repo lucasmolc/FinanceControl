@@ -1,0 +1,15 @@
+/* Component library styles (MEL-42): one @import per component family from ./ui/<name>.css, inside @layer components.
+   Owned by the component library. The components layer comes after "app" (see styles.css), so these rules extend the
+   legacy .btn/.badge/.card/.segmented/.data-table look without specificity fights. */
+@import "./ui/base.css" layer(components);
+@import "./ui/button.css" layer(components);
+@import "./ui/select.css" layer(components);
+@import "./ui/datepicker.css" layer(components);
+@import "./ui/toggles.css" layer(components);
+@import "./ui/inputs.css" layer(components);
+@import "./ui/navigation.css" layer(components);
+@import "./ui/overlays.css" layer(components);
+@import "./ui/feedback.css" layer(components);
+@import "./ui/data.css" layer(components);
+@import "./ui/identity.css" layer(components);
+@import "./ui/gallery.css" layer(components);

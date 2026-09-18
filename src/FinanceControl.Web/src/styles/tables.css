@@ -1,0 +1,109 @@
+/* Data tables. Tables never widen the page: overflow stays inside .table-wrap,
+   and below 620px .data-table rows become stacked cards labelled by td[data-label]. */
+.table-wrap { max-width: 100%; overflow-x: auto; border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: var(--glass); box-shadow: var(--shadow-card); }
+table { width: 100%; border-collapse: collapse; font-size: var(--text-md); }
+/* Legacy plain tables keep their comfortable width but scroll inside the wrapper */
+.table-wrap > table:not(.data-table) { min-width: 720px; }
+th, td { padding: var(--cell-pad-y) 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+th { color: var(--muted); background: var(--table-head); font-size: var(--text-xs); font-weight: 650; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+tbody tr:last-child td, tr:last-child td { border-bottom: 0; }
+td { color: var(--text-soft); overflow-wrap: break-word; }
+td b, td strong { color: var(--text); }
+td small { margin-top: 1px; }
+
+.data-table { min-width: 0; }
+.data-table tbody tr:hover td { background: var(--row-hover); }
+.data-table th.num, .data-table td.num, th.num, td.num { text-align: right; font-feature-settings: var(--numeric); font-variant-numeric: tabular-nums; white-space: nowrap; overflow-wrap: normal; }
+.data-table th.actions, .data-table td.actions, th.actions, td.actions { width: 1%; text-align: right; white-space: nowrap; }
+.data-table td.actions { padding-top: 6px; padding-bottom: 6px; }
+.data-table td:first-child { color: var(--text); }
+
+/* Stacked cards on narrow screens */
+@media (max-width: 620px) {
+  .table-wrap:has(> .data-table) { overflow: visible; border: 0; border-radius: 0; background: transparent; }
+  .data-table, .data-table tbody, .data-table tr, .data-table td { display: block; width: 100%; }
+  .data-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
+  .data-table tbody { display: grid; gap: 10px; }
+  .data-table tr { padding: 6px var(--space-4); border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: var(--glass); }
+  .data-table tbody tr:hover td { background: transparent; }
+  .data-table td, .data-table td.num {
+    display: grid; grid-template-columns: minmax(0, 38%) minmax(0, 1fr); align-items: baseline; gap: var(--space-3);
+    padding: 9px 0; border-bottom: 1px solid var(--line);
+    text-align: right; white-space: normal; overflow-wrap: break-word;
+  }
+  .data-table tr td:last-child { border-bottom: 0; }
+  .data-table td::before { content: attr(data-label); color: var(--muted); font-size: var(--text-xs); font-weight: 600; text-align: left; overflow-wrap: normal; }
+  .data-table td:not([data-label])::before, .data-table td[data-label=""]::before { content: none; }
+  .data-table td:not([data-label]), .data-table td[data-label=""] { grid-template-columns: minmax(0, 1fr); text-align: left; }
+  .data-table td > * { grid-column: 2; min-width: 0; }
+  .data-table td:not([data-label]) > *, .data-table td[data-label=""] > * { grid-column: 1; }
+  .data-table td:first-child { font-weight: 600; }
+  .data-table td.actions { display: flex; width: 100%; justify-content: flex-end; padding: 6px 0 2px; }
+  .data-table td.actions::before { content: none; }
+  .data-table td.actions .row-actions { gap: var(--space-1); }
+  .data-table td > .badge, .data-table td > .money { justify-self: end; }
+  /* Row groups keep their header as a plain line between the stacked cards */
+  .data-table tbody.ui-group { display: grid; gap: 10px; }
+  .data-table tr.ui-group-row { padding: 0; border: 0; background: transparent; }
+  .data-table tr.ui-group-row th { display: block; padding: var(--space-2) 2px 0; border: 0; }
+}
+
+/* Name columns never break inside a word (CR-11: "Alimentaçã/o") */
+.data-table .entity-name, .data-table td:first-child b { overflow-wrap: break-word; word-break: normal; hyphens: manual; }
+.data-table th.col-name, .data-table td.col-name { min-width: 11rem; }
+
+/* ---------- Lançamentos (R1-LANC-2/3/4) ---------- */
+/* Account/method on one line: the compact density keeps its row height at 1024 px. */
+.account-cell { max-width: 16rem; }
+.account-cell-text { overflow: hidden; min-width: 0; text-overflow: ellipsis; white-space: nowrap; }
+.account-cell-text small { display: inline; margin: 0; font-size: var(--text-xs); }
+.account-cell-short { display: none; }
+/* R2-LANC-1: medium widths show logo + short method ("Crédito", "Pix"); the account name lives in the tooltip. */
+@media (min-width: 621px) and (max-width: 1199px) {
+  .account-cell .account-cell-long { display: none; }
+  .account-cell .account-cell-short { display: inline; }
+}
+/* Description and notes on one line each, category never wraps: the row keeps its height in the compact density. */
+.description-text { display: grid; min-width: 0; }
+.description-text > b, .description-text > small { overflow: hidden; min-width: 0; text-overflow: ellipsis; white-space: nowrap; }
+.description-text > small { margin: 0; font-size: var(--text-xs); }
+.data-table td.col-description { max-width: 0; width: 42%; }
+.data-table td.col-description .description-cell { display: flex; max-width: 100%; }
+.data-table td.col-category { white-space: nowrap; }
+.description-text > .description-category { display: none; }
+/* Medium widths: the category moves under the description (notes go to the tooltip), so the description keeps room. */
+@media (min-width: 621px) and (max-width: 1199px) {
+  .data-table th.col-category, .data-table td.col-category { display: none; }
+  .description-text > .description-notes { display: none; }
+  .description-text > .description-category { display: block; }
+}
+/* Compact density: the second line joins the first ("Mercado · Alimentação"), so a row stays near 40 px. */
+@media (min-width: 621px) {
+  :root[data-density="compacto"] .description-text { display: flex; align-items: baseline; gap: 6px; }
+  :root[data-density="compacto"] .description-text > b { flex: 0 1 auto; }
+  :root[data-density="compacto"] .description-text > small { flex: 0 10 auto; }
+  :root[data-density="compacto"] .description-text > small::before { content: "· "; }
+  :root[data-density="compacto"] .data-table td.actions { padding-top: 3px; padding-bottom: 3px; }
+  /* R4-LANC-1: only days with 2+ transactions keep a header — a slim subtotal line. */
+  :root[data-density="compacto"] .data-table tr.ui-group-row th,
+  :root[data-density="compacto"] .data-table tbody.ui-group:first-of-type tr.ui-group-row th { padding: 8px 14px 4px; }
+}
+/* Block-level account cell: no inline strut under the 24 px logo (keeps the compact row at ~41 px). */
+.data-table td .account-cell { display: flex; }
+@media (max-width: 620px) {
+  .data-table td.col-description { max-width: none; width: 100%; }
+  .description-text > b, .description-text > small { white-space: normal; }
+}
+.transactions-toolbar .transactions-sort { min-width: 200px; }
+.ui-group-title .day-short { display: none; }
+@media (max-width: 620px) {
+  .ui-group-title .day-long { display: none; }
+  .ui-group-title .day-short { display: inline; }
+  .transactions-toolbar .transactions-sort { flex: 1 1 100%; }
+  .account-cell { max-width: none; }
+}
+
+/* Four KPIs never leave an orphan (3 + 1): 2 × 2 until the row fits all four. */
+@media (min-width: 621px) and (max-width: 1099px) {
+  .stat-strip:has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

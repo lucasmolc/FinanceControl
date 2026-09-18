@@ -1,0 +1,33 @@
+/* BrandBadge / BankLogo (.bank-logo), CategoryIcon, CurrencyIcon */
+
+/* ---------- Brand badge (stylized monogram or uploaded logo) ---------- */
+.ui-brand-badge {
+  display: inline-grid; flex: none; place-items: center; overflow: hidden;
+  border-radius: 25%; line-height: 0;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent);
+}
+.ui-brand-badge.shape-circle { border-radius: 50%; }
+.ui-brand-badge > svg, .ui-brand-badge > img { width: 100%; height: 100%; }
+.ui-brand-badge > img { object-fit: contain; background: #ffffff; }
+.ui-brand-monogram { font-family: var(--font-sans); letter-spacing: -0.03em; }
+/* Unknown brand (CR-29): neutral tile + generic glyph, clearly "not a logo" */
+.ui-brand-badge.is-generic { color: var(--muted); background: var(--panel-3); }
+.ui-brand-badge.is-generic > svg.ui-brand-generic { width: 55%; height: 55%; }
+
+/* ---------- Category icon ---------- */
+.ui-category-icon {
+  --icon-color: var(--muted);
+  display: inline-grid; flex: none; place-items: center;
+  color: color-mix(in srgb, var(--icon-color) 78%, var(--text));
+}
+.ui-category-icon.variant-badge {
+  border-radius: 30%;
+  background: color-mix(in srgb, var(--icon-color) 18%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--icon-color) 30%, transparent);
+}
+
+/* ---------- Currency icon ---------- */
+.ui-currency-icon { display: inline-grid; flex: none; place-items: center; line-height: 0; }
+.ui-currency-icon > svg { display: block; }
+.ui-currency-glyph { font-family: var(--font-sans); }
+.ui-currency-icon.is-unknown .ui-currency-glyph { letter-spacing: -0.04em; }

@@ -1,0 +1,217 @@
+/* Phase 2 · Pages-A (dashboard, transactions, settings, setup, tour, closing) + gaps reported by Insights/FE-Core. Tokens only. */
+
+/* ---------- Insights polish (reports, projections, market, charts) ---------- */
+
+/* Variation chip tone by meaning, not direction (e.g. expenses up = bad). The arrow shape still follows .up/.down. */
+.kpi-delta.good { color: var(--gain); background: var(--positive-soft); }
+.kpi-delta.bad { color: var(--loss); background: var(--danger-soft); }
+
+/* Chart overlays (AreaChart band/highlight line, BarChart highlight rect, tooltip footnote) */
+/* fill comes from the series color attribute (fallback currentColor); opacity is set inline */
+.chart-band { color: var(--series, currentColor); stroke: none; pointer-events: none; }
+line.chart-highlight { stroke: var(--line-strong); stroke-width: 1.5; stroke-dasharray: 3 4; pointer-events: none; }
+rect.chart-highlight { stroke: none; pointer-events: none; }
+.chart-tooltip-note { margin: 4px 0 0; color: var(--muted); font-size: var(--text-2xs, var(--text-xs)); line-height: 1.35; }
+
+/* Relatórios: custom range with MonthPicker triggers */
+.report-custom-range { flex-wrap: wrap; align-items: flex-end; justify-content: flex-start; gap: var(--space-2) var(--space-3); }
+.report-custom-range .field { gap: 4px; min-width: 0; }
+.report-custom-range .ui-monthpicker-trigger { min-width: 180px; }
+.report-custom-range > .btn { align-self: flex-end; }
+.report-custom-range > .field-error { flex-basis: 100%; margin: 0; }
+.report-kpis .kpi-delta + .muted { font-size: var(--text-xs); }
+
+/* Mercado */
+.market-rate-group { gap: var(--space-3); }
+.market-rate-group + .market-rate-group { margin-top: var(--space-2); }
+.market-card-head .ui-currency-icon { flex: none; align-self: center; }
+.market-card-head .market-name { display: grid; gap: 2px; min-width: 0; }
+.market-change.has-icon::before { content: none; }
+.market-change svg, .rate-change svg { flex: none; width: 14px; height: 14px; }
+.converter .ui-select { min-width: 0; }
+
+/* Relatórios · impressão (Imprimir): only the report content, print palette via system colors, no page-splitting cards */
+@media print {
+  :root:has(.reports-page) {
+    color-scheme: light;
+    --bg: Canvas; --panel: Canvas; --panel-2: Canvas; --panel-3: Canvas; --card-end: Canvas; --field: Canvas;
+    --text: CanvasText; --text-soft: CanvasText; --muted: GrayText;
+    --line: GrayText; --line-strong: GrayText;
+    --glass-strong: Canvas; --shadow-float: none;
+  }
+  :root:has(.reports-page) body { background: Canvas; color: CanvasText; }
+  :root:has(.reports-page) :is(.sidebar, .mobile-nav, .mobile-more, .mobile-more-panel, .topbar, .toast-region, .command-palette-trigger, .hide-values-toggle, .ticker, .brand-intro) { display: none !important; }
+  :root:has(.reports-page) .shell { display: block; min-height: 0; }
+  :root:has(.reports-page) .main { max-width: none; padding: 0; }
+  .reports-page :is(.page-header-actions, .report-toolbar, .chart-tooltip) { display: none !important; }
+  .reports-page .card { box-shadow: none; border: 1px solid var(--line); background: Canvas; break-inside: avoid; page-break-inside: avoid; }
+  .reports-page .stat-strip, .reports-page .table-wrap, .reports-page figure.chart { break-inside: avoid; page-break-inside: avoid; }
+  .reports-page .report-grid { grid-template-columns: minmax(0, 1fr); }
+  .reports-page .report-grid > * { grid-column: 1 / -1; }
+  .reports-page .chart, .reports-page .chart-svg { width: 100%; max-width: 100%; }
+  .reports-page .is-refreshing { opacity: 1; }
+}
+
+/* ---------- Shell leftovers (FE-Core markup) ---------- */
+.page-content { min-width: 0; }
+/* CR-17: the search button shows its shortcut ("Ctrl K") on desktop with a fine pointer; icon only elsewhere */
+.command-palette-trigger .kbd { display: none; }
+@media (min-width: 981px) and (pointer: fine) {
+  .command-palette-trigger { display: inline-flex; align-items: center; width: auto; gap: var(--space-2); padding: 0 var(--space-2) 0 var(--space-3); }
+  .command-palette-trigger .kbd { display: inline-grid; height: 20px; padding: 0 5px; white-space: nowrap; letter-spacing: 0.02em; }
+}
+.hide-values-toggle[aria-pressed="true"] { color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+
+/* ---------- Visão geral (MEL-30/MEL-38) ---------- */
+.dashboard-toolbar { display: flex; justify-content: flex-end; margin-top: var(--space-4); }
+.dashboard-toolbar + .dashboard-customize-panel { margin-top: var(--space-3); }
+.dashboard-customize[aria-pressed="true"] { color: var(--accent-text); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.dashboard-customize-panel { display: grid; gap: var(--space-3); border-color: var(--accent-line); }
+.dashboard-customize-panel > .card-header { margin-bottom: 0; }
+.widget-hidden-list { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.dashboard-note { margin: var(--space-3) 0 0; }
+/* R4-PAINEL-1: a report chart without data (offline/failed) says so in one quiet line — not an empty state */
+.widget-unavailable { margin: 0; padding: var(--space-4) 0; font-size: var(--text-sm); text-align: center; }
+.widget-grid.is-editing .widget { outline: 1px dashed var(--line-strong); outline-offset: 3px; }
+.widget-grid.is-editing .widget[draggable="true"] { cursor: grab; }
+.widget > .card-header { align-items: flex-start; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-3); }
+.widget > .card-header > div:first-child { flex: 1 1 12rem; min-width: 0; }
+.widget-total { color: var(--text); font-size: var(--text-md); font-weight: 700; font-feature-settings: var(--numeric); white-space: nowrap; }
+.widget-link { display: inline-flex; align-items: center; gap: 4px; }
+.widget-delta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-2); font-size: var(--text-sm); }
+.widget-subtitle { margin: var(--space-4) 0 var(--space-1); color: var(--text-soft); font-size: var(--text-sm); font-weight: 650; }
+/* Hero widget: the hero card is the widget (no extra card chrome) */
+.widget-hero { display: block; }
+.widget-hero .hero-label { font-size: var(--text-sm); }
+.hero-value.negative { color: var(--loss); }
+.hero-delta { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.hero-meta > span { display: inline-flex; align-items: baseline; gap: 6px; }
+.hero-meta .money { color: var(--text-soft); font-weight: 600; }
+/* Bills timeline: the paid toggle fills the middle column. R1-PAINEL-1: the column may shrink (min-width 0) and the
+   status pills wrap to their own line or ellipsize inside the pill — never spill under the amount. */
+.timeline-item .bill-check { min-width: 0; min-height: 48px; padding: 6px var(--space-2); border-color: transparent; background: transparent; }
+.timeline-item .bill-check:hover:not(:disabled) { background: var(--panel-3); }
+.timeline-item .bill-check .check > span { display: grid; min-width: 0; }
+/* R2-PAINEL-3: names stay on one line (ellipsis + title), never broken mid-word ("Condomíni/o") */
+.timeline-item .bill-check b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.timeline-item .bill-check small { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; margin-top: 2px; }
+/* R4-PAINEL-2: the status pill wraps inside itself instead of cutting ("Vence em 28/09 (10 dias)" keeps its days at 1440
+   and 375); the radius stays round on one line and turns into a soft rectangle on two. */
+.timeline-item .bill-check small .badge, .timeline-invoice small .badge {
+  flex: 0 1 auto; min-width: auto; max-width: 100%; border-radius: 11px; white-space: normal; overflow-wrap: break-word; text-wrap: balance; text-align: left;
+}
+/* R2-PAINEL-3: the amount and its action stay on the name's row down to a 300px-wide widget (a third of the grid at
+   1280px+ is ~330px); only a narrower widget moves the amount under the name. */
+.widget[data-widget="contas"] .widget-body { container-type: inline-size; }
+@container (max-width: 300px) {
+  .timeline-item { grid-template-columns: 44px minmax(0, 1fr); row-gap: 2px; }
+  .timeline-amount { grid-column: 2; justify-self: start; padding-left: var(--space-2); }
+}
+.timeline-amount { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: 650; font-feature-settings: var(--numeric); white-space: nowrap; }
+/* R2-PAINEL-3: in a widget a third of the grid wide, the amount sits on the name's line and its action under it, so the
+   name and the status keep the whole middle column (rows ~64px instead of ~110px). */
+@container (min-width: 301px) and (max-width: 440px) {
+  .timeline-item { grid-template-columns: 40px minmax(0, 1fr) auto; gap: var(--space-2); }
+  .timeline-date { width: 40px; }
+  .timeline-item .bill-check { padding-inline: 4px; }
+  .timeline-item .timeline-invoice { padding-inline: 4px 0; }
+  /* R3-PAINEL-3: the details/pay button stays on the amount's line (it used to sit alone on a second line); the card
+     name keeps the room the logo took, so "Nubank Roxinho" is not cut (the date tile and "Fatura de …" identify it) */
+  .timeline-amount { gap: 2px; }
+  .timeline-item .timeline-invoice-logo { display: none; }
+}
+@media (pointer: fine) {
+  @container (min-width: 301px) and (max-width: 440px) {
+    .timeline-amount .icon-btn { width: 32px; height: 28px; min-height: 28px; }
+  }
+}
+/* R2-PAINEL-2: a card invoice is a timeline row too — logo + "Fatura <cartão>" + status, amount + "Pagar fatura" */
+.timeline-invoice { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: 48px; padding: 6px var(--space-2); }
+.timeline-invoice > span:last-child { display: grid; min-width: 0; }
+.timeline-invoice b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.timeline-invoice small { display: flex; min-width: 0; margin-top: 2px; }
+/* R3-PAINEL-3: "Fatura de agosto" before the status pill; wraps under it in a narrow widget */
+.timeline-invoice small { flex-wrap: wrap; align-items: center; gap: 2px 6px; }
+.timeline-invoice-logo { display: inline-flex; flex: none; }
+.timeline-invoice-month { color: var(--muted); font-size: var(--text-xs); white-space: nowrap; }
+/* R3-PAINEL-5: bar and its status on one line (Restam R$ X · 62% / "R$ X acima") */
+.budget-meter { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.budget-meter > .progress { flex: 1 1 auto; min-width: 48px; margin-top: 0; }
+.budget-meter > small, .budget-meter > .badge { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.budget-status.is-near { color: var(--warning-text); }
+/* R2-PAINEL-4: plan rows read like the budget rows — name | value over "de R$ X (limite)" */
+.widget[data-widget="plano"] .plan-bar-head { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-2); }
+.widget[data-widget="plano"] .plan-bar-head > b { min-width: 0; }
+.widget[data-widget="plano"] .plan-bar-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px var(--space-2); }
+/* Budget rows: category glyph before the name. CR-11: names wrap between words only ("Alimentação", never "Alimentaçã/o")
+   and keep a readable minimum next to the amount. */
+.budget-name { display: inline-flex; align-items: center; gap: var(--space-2); min-width: min(9rem, 45%); word-break: normal; overflow-wrap: normal; hyphens: manual; }
+.budget-name b { min-width: 0; }
+/* CR-11: "R$ 9.000,00 de R$ 25.000,00" — two deliberate lines (value strong, target quiet) instead of three wraps */
+.amount-of { display: inline-grid; justify-items: end; gap: 0; line-height: 1.25; text-align: right; font-feature-settings: var(--numeric); white-space: nowrap; }
+.amount-of > small { margin: 0; font-size: var(--text-xs); }
+/* R4-PAINEL-5: in the budget widget "R$ 450,00 de R$ 600,00" shares one line when it fits (it wraps back to two lines
+   only in a narrow widget), so a row is name | amount, then bar | status (~50px instead of ~75px). */
+.budget-line .amount-of { display: inline-flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; column-gap: 4px; }
+.budget-line .budget-name { min-width: min(8rem, 42%); }
+/* R1-PAINEL-6: goal row = name (wraps) | amount | action; nothing overlaps the piggy-bank button */
+.goal-line { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: var(--space-2); }
+.goal-line-name { min-width: 0; overflow-wrap: break-word; }
+.goal-line-name b { margin-right: 4px; }
+
+/* ---------- Visão geral KPIs (CR-13) ----------
+   Three or four KPIs on one row on desktop; a compact 2×2 grid on phones (an odd last KPI spans the row) so the first
+   screen shows the month, not four stacked cards. */
+.dashboard-kpis:has(> .card:nth-child(3):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 980px) {
+  .dashboard-kpis:has(> .card:nth-child(3):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .grid.cards.dashboard-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .dashboard-kpis > .card { min-width: 0; padding: var(--space-3); }
+  .dashboard-kpis > .card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .dashboard-kpis .label { font-size: var(--text-xs); }
+  .dashboard-kpis .value { font-size: clamp(var(--text-md), 4.6vw, var(--text-xl)); overflow-wrap: anywhere; }
+  .dashboard-kpis .kpi-hint { font-size: var(--text-2xs); }
+}
+/* Market widget + ticker */
+.market-widget-list .list-amount { display: grid; justify-items: end; gap: 2px; }
+.ticker-change.has-icon::before { content: none; }
+.ticker-change svg { flex: none; }
+.widget .list-item > .bank-logo, .widget .list-item > .ui-currency-icon { flex: none; }
+.widget .list-main { flex: 1 1 auto; min-width: 0; }
+@media (max-width: 620px) {
+  .dashboard-toolbar { justify-content: stretch; }
+  .dashboard-toolbar .btn { flex: 1 1 auto; justify-content: center; }
+  /* R2-PAINEL-3: the timeline follows its container width (queries above), not the viewport */
+}
+
+/* ---------- Lançamentos ---------- */
+.transactions-toolbar .transactions-search { flex: 1 1 240px; max-width: 420px; }
+.transactions-toolbar .transactions-category { min-width: 200px; }
+.description-cell, .account-cell { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.description-cell > span:last-child, .account-cell > span:last-child { min-width: 0; }
+.amount-stack { display: inline-grid; justify-items: end; gap: 1px; }
+.amount-stack small { font-size: var(--text-xs); font-feature-settings: var(--numeric); }
+@media (max-width: 620px) {
+  .transactions-toolbar .transactions-search, .transactions-toolbar .transactions-category { flex: 1 1 100%; max-width: none; }
+  .amount-stack { justify-items: start; }
+}
+
+/* ---------- Configurações ---------- */
+.settings-column { display: grid; gap: var(--space-4); min-width: 0; align-content: start; }
+.settings-layout > .settings-column:first-child { grid-column: 1; }
+.reserve-status { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); margin: 0; color: var(--text-soft); font-size: var(--text-sm); }
+.reserve-status .money { color: var(--text); font-weight: 650; }
+.settings-reserve > .card-header, .settings-appearance > .card-header, .settings-market > .card-header { align-items: flex-start; }
+.appearance-group > .row { justify-content: space-between; }
+.appearance-preview-hero { display: grid; gap: var(--space-1); align-content: start; min-width: 0; }
+.appearance-preview-value { color: var(--text); font-size: var(--text-2xl); font-weight: 760; letter-spacing: -0.035em; font-feature-settings: var(--numeric); }
+.appearance-preview-side { display: grid; gap: var(--space-3); align-content: space-between; min-width: 0; }
+.appearance-preview-chart { display: block; width: 100%; height: 48px; }
+.widget-toggle-position { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: var(--text-soft); background: var(--panel-3); font-size: var(--text-xs); font-weight: 700; font-feature-settings: var(--numeric); }
+.widget-toggle.is-hidden .widget-toggle-position { background: transparent; color: var(--muted); }
+.settings-data .ui-file-upload { margin-top: var(--space-1); }
+
+/* ---------- Setup ---------- */
+.setup-stepper { margin: var(--space-2) 0 var(--space-3); }

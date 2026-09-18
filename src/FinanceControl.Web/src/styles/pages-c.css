@@ -1,0 +1,479 @@
+/* v1.3 · FE-Insights (plan 70-20-10, setup, settings, tour, reports, projections, market). Tokens only. */
+
+/* ---------- MEL-45 · plan suggestion (setup step 2 and Configurações) ----------
+   .plan-suggestion > .plan-suggestion-head(h3 + .btn) + .plan-explanation(.plan-lead + .plan-table-wrap > table.plan-table + p… + details.plan-premise) */
+.plan-suggestion { display: grid; gap: var(--space-4); }
+.plan-suggestion-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); }
+.plan-suggestion-head h3 { margin: 0; font-size: var(--text-lg); letter-spacing: -0.015em; }
+.plan-suggestion-head h3:focus { outline: none; }
+.plan-explanation { display: grid; gap: var(--space-3); }
+.plan-explanation p { max-width: 72ch; margin: 0; color: var(--text-soft); line-height: 1.55; }
+.plan-explanation p b { color: var(--text); }
+.plan-lead { color: var(--text) !important; }
+.plan-premise { color: var(--text-soft); font-size: var(--text-sm); }
+.plan-premise summary { width: fit-content; color: var(--accent-text, var(--accent)); font-weight: 600; cursor: pointer; }
+.plan-premise summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-xs); }
+.plan-premise p { margin-top: var(--space-2); font-size: var(--text-sm); }
+
+.plan-table-wrap { display: grid; gap: var(--space-2); min-width: 0; overflow-x: auto; }
+.plan-table { width: 100%; border-collapse: separate; border-spacing: 0; border: 1px solid var(--line); border-radius: var(--radius-md); background: color-mix(in srgb, var(--panel) 70%, transparent); font-size: var(--text-md); }
+.plan-table th, .plan-table td { padding: 10px var(--space-3); border-bottom: 1px solid var(--line); text-align: left; vertical-align: middle; }
+.plan-table thead th { color: var(--muted); font-size: var(--text-2xs); font-weight: 650; letter-spacing: 0.1em; text-transform: uppercase; }
+.plan-table tbody tr:last-child > *, .plan-table tfoot tr > * { border-bottom: 0; }
+.plan-table tfoot tr > * { border-top: 1px solid var(--line); }
+.plan-table .num { text-align: right; font-feature-settings: var(--numeric); white-space: nowrap; }
+.plan-table tbody th { color: var(--text); font-size: inherit; font-weight: 400; letter-spacing: normal; text-transform: none; white-space: normal; overflow-wrap: anywhere; }
+.plan-table tbody th b { display: block; color: var(--text); font-weight: 650; }
+.plan-table tbody th small { display: block; color: var(--muted); font-size: var(--text-xs); font-weight: 500; }
+.plan-rule { color: var(--text-soft); font-feature-settings: var(--numeric); white-space: nowrap; }
+.plan-rule-edit { display: inline-flex; align-items: center; gap: 6px; }
+.plan-rule-edit input { width: 5.5ch; min-height: 34px; padding: 4px 8px; text-align: right; font-feature-settings: var(--numeric); }
+.plan-value .money { color: var(--text); font-weight: 700; }
+.plan-value small { color: var(--muted); font-size: var(--text-xs); }
+.plan-row-fixed .plan-value .money, .plan-row-fun .plan-value .money { color: var(--text); }
+.plan-row-invest .plan-value .money { color: var(--positive); }
+.plan-row-multiplier .plan-value .money { color: var(--gold); }
+.plan-sum-ok { color: var(--positive); font-weight: 650; }
+.plan-sum-bad { color: var(--danger-text, var(--danger)); font-weight: 650; }
+.plan-errors p { margin: 0; }
+.plan-apply-note { margin: 0; font-size: var(--text-sm); line-height: 1.5; }
+.plan-apply-note .money { color: var(--text); font-weight: 650; }
+
+/* Setup: final "Tudo pronto" (CR-27 next step) */
+.setup-done { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: var(--space-3); align-items: start; }
+.setup-done-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: var(--radius-md); color: var(--positive); background: var(--positive-soft); }
+.setup-done p { margin: 0; line-height: 1.55; }
+.setup-done > .stack > p:first-child { color: var(--text); font-size: var(--text-lg); font-weight: 700; }
+.setup-done-list { display: grid; gap: var(--space-1); margin: 0; padding-left: 1.1em; color: var(--text-soft); line-height: 1.5; }
+.setup-done-list .money { color: var(--text); font-weight: 650; }
+
+/* ---------- CR-22 · Configurações: index + single column ---------- */
+.settings-index { position: sticky; top: calc(var(--space-8) * 2 + var(--space-5)); min-width: 0; }
+.settings-index ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.settings-index button {
+  display: block; width: 100%; min-height: 36px; padding: 6px var(--space-3);
+  border: 0; border-radius: var(--radius-sm); color: var(--muted); background: transparent;
+  font-size: var(--text-md); font-weight: 600; text-align: left; cursor: pointer;
+}
+.settings-index button:hover { color: var(--text); background: var(--panel-hover); }
+.settings-index button[aria-current="true"] { color: var(--text); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.settings-index button:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 1px; }
+.settings-content { display: grid; gap: var(--space-4); min-width: 0; max-width: 920px; }
+.settings-anchor { min-width: 0; scroll-margin-top: calc(var(--space-8) * 2 + var(--space-5)); }
+.settings-content h2[tabindex="-1"]:focus { outline: none; }
+.settings-plan > .card-header { align-items: flex-start; }
+.settings-plan > .stack { gap: var(--space-4); }
+.settings-subsection { display: grid; gap: var(--space-3); margin-top: var(--space-5); padding-top: var(--space-4); border-top: 1px solid var(--line); }
+.settings-subsection > .row { justify-content: flex-start; gap: var(--space-2); }
+.settings-subsection h3 { margin: 0; font-size: var(--text-lg); }
+.database-file { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin: var(--space-1) 0; }
+.database-file code { min-width: 0; overflow: hidden; color: var(--text); font-size: var(--text-md); text-overflow: ellipsis; white-space: nowrap; }
+.database-path summary { width: fit-content; color: var(--muted); font-size: var(--text-sm); cursor: pointer; }
+.database-path code { display: block; margin-top: var(--space-1); color: var(--text-soft); font-size: var(--text-xs); overflow-wrap: anywhere; }
+
+/* ---------- MEL-45 · dashboard widget "plano" ---------- */
+.plan-bars { gap: var(--space-4); }
+.plan-bar { display: grid; gap: 6px; }
+.plan-bar > .row { justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
+.plan-bar-amount { font-feature-settings: var(--numeric); text-align: right; }
+.plan-bar-amount .money { color: var(--text); font-weight: 650; }
+.plan-note { display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--space-2); margin: var(--space-3) 0 0; font-size: var(--text-sm); }
+.plan-surplus {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3);
+  margin-top: var(--space-4); padding: var(--space-3); border: 1px solid var(--positive-line); border-radius: var(--radius-md);
+  color: var(--positive); background: var(--positive-wash);
+}
+.plan-surplus p { margin: 0; color: var(--text-soft); font-size: var(--text-sm); line-height: 1.45; }
+.plan-surplus b, .plan-surplus .money { color: var(--text); }
+
+/* ---------- MEL-45 · Relatórios: bucket × plan ---------- */
+.plan-report { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr); gap: var(--space-5); align-items: center; }
+.plan-report-list { display: grid; gap: var(--space-3); margin: 0; padding: 0; list-style: none; }
+.plan-report-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-1) var(--space-3); }
+.plan-report-list .badge, .plan-report-list .ui-badge { white-space: nowrap; }
+.plan-report-list li > span { display: grid; gap: 2px; min-width: 0; }
+.plan-report-list small { font-feature-settings: var(--numeric); }
+.report-compare-note { margin: calc(var(--space-3) * -1) 0 var(--space-4); font-size: var(--text-sm); }
+
+/* ---------- CR-24 · Projeções ---------- */
+.scenario-result-bar { display: none; }
+.scenario-preset-note { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); color: var(--text-soft); background: var(--accent-soft); font-size: var(--text-sm); line-height: 1.5; }
+.scenario-actions .btn[aria-pressed="true"] { border-color: var(--accent-line); color: var(--text); background: var(--accent-soft); }
+.projection-table-card > .card-header { align-items: center; margin-bottom: 0; }
+.projection-table-card .table-wrap:not([hidden]) { margin-top: var(--space-4); }
+.projection-table-card .btn svg { transition: transform var(--duration) var(--ease-out); }
+.projection-table-card .btn svg.is-open { transform: rotate(180deg); }
+.milestones-note b { color: var(--text-soft); }
+
+/* ---------- CR-23 · Mercado ---------- */
+.market-sources { font-size: var(--text-sm); }
+.market-card .card-actions { justify-content: flex-end; }
+.market-others { display: grid; gap: var(--space-4); }
+.market-others > summary {
+  display: flex; align-items: center; gap: var(--space-2); width: fit-content; min-height: 40px; padding: 6px var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius-md); color: var(--text); background: var(--panel); font-weight: 650; cursor: pointer; list-style: none;
+}
+.market-others > summary::-webkit-details-marker { display: none; }
+.market-others > summary svg { transition: transform var(--duration) var(--ease-out); }
+.market-others[open] > summary svg { transform: rotate(180deg); }
+.market-others > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.market-others > .stack { margin-top: var(--space-4); }
+
+@media (max-width: 1200px) {
+  .plan-report { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 980px) {
+  /* Settings index: a sticky row of pills above the sections. */
+  .settings-index { position: sticky; top: 0; z-index: 5; max-width: 100%; padding: var(--space-2) 0; background: var(--bg); box-shadow: 0 1px 0 var(--line); }
+  .settings-index ul { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; }
+  .settings-index ul::-webkit-scrollbar { display: none; }
+  .settings-index li { flex: 0 0 auto; }
+  .settings-index button { min-height: 36px; padding: 6px 14px; border: 1px solid var(--line); border-radius: var(--radius-pill); background: var(--panel); font-size: var(--text-sm); white-space: nowrap; }
+  /* R4-CFG-1: fade the edge that hides more pills (scroll cue). */
+  .settings-index ul.has-more-right { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 56px), transparent); }
+  .settings-index ul.has-more-left { -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px); mask-image: linear-gradient(90deg, transparent, #000 40px); }
+  .settings-index ul.has-more-left.has-more-right { -webkit-mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 56px), transparent); mask-image: linear-gradient(90deg, transparent, #000 40px, #000 calc(100% - 56px), transparent); }
+  /* R4-CFG-1: secondary sections fold to one toggle row on phones. */
+  .settings-collapse-toggle { width: 100%; min-height: 44px; justify-content: space-between; }
+  .settings-collapse-toggle svg { flex: none; transition: transform var(--duration) var(--ease-out); }
+  .settings-collapse-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .settings-collapse-body:not([hidden]) { margin-top: var(--space-3); }
+  .settings-anchor { scroll-margin-top: 64px; }
+
+  /* Projeções: the result stays pinned at the top of the scenario while its fields scroll. */
+  .scenario-result-bar {
+    position: sticky; top: 0; z-index: 4; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 2px var(--space-3);
+    margin: calc(var(--card-pad, 20px) * -1) calc(var(--card-pad, 20px) * -1) 0; padding: var(--space-3) var(--card-pad, 20px);
+    border-bottom: 1px solid var(--accent-line); border-radius: var(--radius-lg) var(--radius-lg) 0 0; background: var(--panel-2);
+  }
+  .scenario-result-bar span { color: var(--muted); font-size: var(--text-sm); font-weight: 600; }
+  .scenario-result-bar strong { grid-row: span 2; color: var(--text); font-size: var(--text-xl); font-weight: 760; letter-spacing: -0.025em; font-feature-settings: var(--numeric); text-align: right; }
+  .scenario-result-bar small { color: var(--muted); font-size: var(--text-xs); font-feature-settings: var(--numeric); }
+}
+
+@media (max-width: 620px) {
+  .plan-table th, .plan-table td { padding: var(--space-2); }
+  .plan-table { font-size: var(--text-sm); }
+  .plan-rule { white-space: normal; }
+  .plan-rule-edit { flex-wrap: nowrap; }
+  .plan-rule-edit > span:first-child { display: none; }
+  .plan-value small { display: block; }
+  .plan-surplus { grid-template-columns: auto minmax(0, 1fr); }
+  .plan-surplus .btn { grid-column: 1 / -1; width: 100%; }
+  .setup-done { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* =====================================================================================================================
+   R1 fix round · FE-Insights (plan, setup, settings, tour, reports, projections, market). Tokens only; same layer (app).
+   ===================================================================================================================== */
+
+/* ---------- Plan table: readable inputs, sentence-case header, the teto line (R1-CFG-3/SET-1, decision 1) ---------- */
+.plan-table thead th, .plan-table tfoot th { font-size: var(--text-xs); font-weight: 600; letter-spacing: normal; text-transform: none; }
+.plan-table tfoot th { color: var(--text-soft); font-size: var(--text-sm); }
+.plan-rule-edit { gap: var(--space-2); }
+.plan-rule-edit input {
+  width: calc(4ch + 28px); min-width: 64px; padding: 4px 10px;
+  text-align: right; font-feature-settings: var(--numeric);
+  appearance: textfield; -moz-appearance: textfield;
+}
+.plan-rule-edit input::-webkit-outer-spin-button, .plan-rule-edit input::-webkit-inner-spin-button { margin: 0; -webkit-appearance: none; appearance: none; }
+.plan-rule-edit input[aria-invalid="true"] { border-color: var(--danger); }
+.plan-rule-edit input[aria-invalid="true"]:focus-visible { outline-color: var(--danger); }
+.plan-rule-edit > span { color: var(--muted); font-size: var(--text-sm); white-space: nowrap; }
+.plan-limit-line { margin: 0; color: var(--text-soft); font-size: var(--text-sm); font-feature-settings: var(--numeric); }
+.plan-limit-line .money { color: var(--text); font-weight: 700; }
+
+/* "Ao aplicar": the consequence of the primary button, right under the table (decision 2, R1-SET-3). */
+.plan-apply-summary { display: grid; gap: var(--space-2); padding: var(--space-3) var(--space-4); border: 1px solid var(--accent-line); border-radius: var(--radius-md); background: var(--accent-soft); }
+.plan-apply-title { margin: 0; color: var(--text) !important; font-size: var(--text-sm); font-weight: 700; }
+.plan-apply-summary ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.plan-apply-summary li { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px var(--space-3); color: var(--text-soft); font-size: var(--text-sm); font-feature-settings: var(--numeric); }
+.plan-apply-summary li > small { color: var(--muted); font-size: var(--text-xs); }
+.plan-apply-summary li .money { color: var(--text); font-weight: 650; }
+.plan-apply-limit > span { color: var(--text); font-weight: 650; }
+.plan-apply-limit b { font-size: var(--text-md); }
+.plan-apply-limit small { color: var(--muted); font-weight: 500; }
+.plan-apply-before { color: var(--muted); text-decoration-thickness: 1px; }
+.plan-apply-before .money { color: var(--muted); font-weight: 500; }
+.plan-premise summary { line-height: 1.4; }
+.plan-premise[open] > p { margin-top: var(--space-2); }
+
+/* Phones: each plan row is a two-line card (item on top; rule left, value right). The table never scrolls (R1-SET-2). */
+@media (max-width: 480px) {
+  .plan-table-wrap { overflow: visible; }
+  .plan-table, .plan-table tbody, .plan-table tfoot { display: block; }
+  .plan-table thead { display: none; }
+  .plan-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px var(--space-3); padding: 10px var(--space-3); border-bottom: 1px solid var(--line); }
+  .plan-table tbody tr:last-child { border-bottom: 0; }
+  .plan-table tfoot tr { border-top: 1px solid var(--line); border-bottom: 0; }
+  .plan-table th, .plan-table td { display: block; padding: 0; border: 0 !important; background: transparent; }
+  .plan-table tbody th { grid-column: 1 / -1; }
+  .plan-table tbody th b, .plan-table tbody th small { display: inline; }
+  .plan-table tbody th small::before { content: " · "; }
+  .plan-table .plan-rule { white-space: nowrap; }
+  .plan-table .plan-value { text-align: right; }
+  .plan-rule-edit > span:first-child { display: inline; }
+  .plan-table tfoot td { text-align: right; }
+}
+
+/* ---------- Configurações ---------- */
+.plan-summary-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-3); margin: 0; }
+.plan-summary-strip > div { display: grid; gap: 2px; min-width: 0; padding: var(--space-3); border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--panel); }
+.plan-summary-strip dt { color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
+.plan-summary-strip dd { margin: 0; font-feature-settings: var(--numeric); }
+.plan-summary-strip dd:nth-of-type(1) { color: var(--text); font-size: var(--text-lg); font-weight: 720; letter-spacing: -0.02em; }
+.plan-summary-strip dd.muted { font-size: var(--text-xs); }
+.plan-details > summary, .widgets-details > summary { width: fit-content; color: var(--accent-text, var(--accent)); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.plan-details > summary:focus-visible, .widgets-details > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-xs); }
+.plan-details[open] > summary { margin-bottom: var(--space-3); }
+.settings-offline-note { font-size: var(--text-sm); }
+.safety-copy p { margin: 0; }
+
+/* Widgets list collapsed by default (R1-CFG-6). */
+.widgets-details > summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); width: 100%; color: var(--text); list-style: none; }
+.widgets-details > summary::-webkit-details-marker { display: none; }
+.widgets-details > summary::before { content: ""; align-self: center; width: 7px; height: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); transition: transform var(--duration) var(--ease-out); }
+.widgets-details[open] > summary::before { transform: rotate(45deg); }
+.widgets-summary-title { font-size: var(--text-base); font-weight: 650; }
+.widgets-details > summary .muted { font-size: var(--text-sm); font-weight: 500; }
+.widgets-details-head { align-items: flex-start; justify-content: space-between; gap: var(--space-3); margin: var(--space-3) 0; }
+.widgets-details-head p { flex: 1 1 auto; min-width: 0; margin: 0; }
+
+/* Theme grid: 6 themes in 3 × 2 (no orphan "Sistema"); the preview is labelled as an example (R1-CFG-10). */
+.settings-appearance .theme-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.appearance-preview { position: relative; }
+.appearance-preview-tag { position: absolute; top: var(--space-2); right: var(--space-2); padding: 1px 8px; border: 1px solid var(--line); border-radius: var(--radius-pill); color: var(--muted); background: var(--panel); font-size: var(--text-2xs); font-weight: 650; }
+@media (max-width: 620px) {
+  .settings-appearance .theme-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .plan-summary-strip { grid-template-columns: minmax(0, 1fr); }
+  .plan-summary-strip > div { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; }
+  .plan-summary-strip dt { grid-column: 1 / -1; }
+}
+
+/* ---------- Setup: brand lockup in the title, the teto change beside the button ---------- */
+.setup-title { display: inline-flex; align-items: center; gap: var(--space-3); }
+.setup-title .logo-mark { flex: 0 0 auto; }
+.wizard-footer-note { color: var(--text-soft); font-size: var(--text-sm); font-feature-settings: var(--numeric); }
+@media (max-width: 620px) {
+  .wizard-actions .row:has(> .wizard-footer-note) { flex-wrap: wrap; justify-content: flex-end; }
+  .wizard-footer-note { flex: 1 1 100%; text-align: right; }
+}
+
+/* ---------- Painel · widget "plano" (R1-PAINEL-2/4/7) ---------- */
+.plan-bar-head, .plan-bar-foot { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-1) var(--space-3); min-width: 0; }
+.plan-bar-head > b { white-space: nowrap; }
+.plan-bar-head .plan-bar-amount { min-width: 0; }
+.plan-bar-foot { align-items: center; }
+.plan-bar-foot .badge, .plan-bar-foot .ui-badge { flex: 0 0 auto; white-space: nowrap; }
+.plan-surplus .btn { white-space: nowrap; }
+.plan-surplus-lock { grid-column: 2 / -1; font-size: var(--text-xs); }
+
+/* ---------- Relatórios ---------- */
+.report-header { align-items: center; margin-bottom: var(--space-4); }
+.report-period { flex: 1 1 auto; min-width: 0; margin: 0; font-size: var(--text-md); }
+.report-period b { color: var(--text); font-weight: 650; }
+.report-grid { grid-auto-flow: row dense; }
+.report-footnote, .milestones-note, .privacy-note { max-width: 72ch; }
+.plan-report-warning {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-4); padding: var(--space-3); border: 1px solid var(--warning-line, var(--line)); border-radius: var(--radius-md);
+  color: var(--warning); background: var(--warning-soft, var(--panel));
+}
+.plan-report-warning p { margin: 0; color: var(--text-soft); font-size: var(--text-sm); line-height: 1.45; }
+.plan-report-warning b { color: var(--text); }
+.report-single-stat { display: grid; gap: var(--space-1); padding: var(--space-3) 0; }
+.report-single-stat strong { color: var(--text); font-size: var(--text-2xl); font-weight: 760; letter-spacing: -0.03em; font-feature-settings: var(--numeric); }
+.report-single-stat small { font-feature-settings: var(--numeric); }
+.report-single-stat p { max-width: 60ch; margin: var(--space-2) 0 0; font-size: var(--text-sm); }
+@media (max-width: 620px) {
+  .plan-report-warning { grid-template-columns: auto minmax(0, 1fr); }
+  .plan-report-warning .btn { grid-column: 1 / -1; justify-self: start; }
+}
+/* Phones: KPIs in two columns, Resultado across (R1-REL-6). */
+@media (max-width: 480px) {
+  .report-kpis.stat-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: row dense; }
+  .report-kpis.stat-strip > .stat:nth-child(4) { grid-column: 1 / -1; }
+}
+
+/* ---------- Projeções ---------- */
+/* Standard card elevation, no accent glow (R1-PRJ-4); wider fields so the basis options fit one line (R1-PRJ-1). */
+.scenario-panel { border-color: var(--glass-border); background: linear-gradient(180deg, var(--glass), color-mix(in srgb, var(--card-end) 86%, transparent)); }
+.scenario-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.basis-picker.segmented { margin-top: var(--space-2); }
+.milestone-when { font-feature-settings: var(--numeric); }
+
+/* ---------- Mercado ---------- */
+.market-header { align-items: center; margin-bottom: var(--space-2); }
+.market-header .market-status { display: grid; gap: var(--space-1); flex: 1 1 auto; min-width: 0; margin: 0; }
+.market-header .market-status p { margin: 0; }
+.market-updated-line b { color: var(--text); font-weight: 650; }
+.market-header .market-status .row { flex-wrap: wrap; justify-content: flex-start; gap: var(--space-2); font-size: var(--text-sm); }
+.market-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.market-card .card-actions { justify-content: flex-start; gap: var(--space-2); margin-top: var(--space-2); }
+@media (max-width: 620px) {
+  .market-header, .report-header { align-items: stretch; text-align: left; }
+  .market-header .page-header-actions { width: auto; }
+  .market-header .page-header-actions .btn { width: auto; }
+}
+
+/* ---------- Tour: real dimming around the highlighted target (R1-TOUR-4) ----------
+   A spotlight: the target's own spread shadow dims the page around it (works inside sticky/positioned containers, where a
+   full-screen layer would also dim the target). The full-screen layer stays for pointer semantics only. */
+.tour-layer { background: transparent; }
+.tour-highlight { box-shadow: 0 0 0 6px var(--accent-soft), 0 0 0 100vmax rgb(2 4 6 / 0.52); }
+:root[data-theme="claro"] .tour-highlight { box-shadow: 0 0 0 6px var(--accent-soft), 0 0 0 100vmax rgb(12 21 17 / 0.34); }
+@media (prefers-color-scheme: light) { :root[data-theme="sistema"] .tour-highlight { box-shadow: 0 0 0 6px var(--accent-soft), 0 0 0 100vmax rgb(12 21 17 / 0.34); } }
+.tour-keys { white-space: nowrap; }
+@media (hover: none) { .tour-keys { display: none; } }
+
+/* =====================================================================================================================
+   R2 fix round · FE-Insights. Tokens only; same layer (app).
+   ===================================================================================================================== */
+
+/* ---------- Relatórios ---------- */
+/* R2-REL-6: small explanatory lines keep a readable measure (60ch of small text ≈ 70 characters). */
+.report-footnote, .milestones-note, .privacy-note, .projection-disclaimer { max-width: 60ch; }
+.report-offline-note { margin: calc(var(--space-2) * -1) 0 var(--space-3); font-size: var(--text-sm); }
+/* R2-REL-5: the period is a native picker on phones (hidden elsewhere). `!important` because the segmented control is
+   styled in the components layer, which follows this one. */
+.report-period-select { display: none; }
+@media (max-width: 480px) {
+  .report-toolbar .report-period-chips { display: none !important; }
+  .report-period-select { display: block; width: 100%; }
+  .report-period-select select { width: 100%; }
+}
+/* R2-REL-4: the empty period offers its two ways forward. */
+.report-empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); }
+/* R2-REL-3: a flat table inside the report card (no card in a card) and the total as a line under it. */
+.report-exposure.table-wrap { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.report-exposure-total { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: flex-end; gap: var(--space-1) var(--space-3); margin: var(--space-3) 0 0; padding: var(--space-3) 14px 0; border-top: 1px solid var(--line); font-feature-settings: var(--numeric); }
+.report-exposure-total b { color: var(--text); font-size: var(--text-md); }
+.report-exposure-single { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
+.report-exposure-single p { margin: 0; color: var(--text-soft); font-feature-settings: var(--numeric); }
+.report-exposure-single b { color: var(--text); font-weight: 650; }
+@media (max-width: 620px) {
+  .report-exposure-total { justify-content: space-between; padding-inline: 0; }
+}
+
+/* ---------- Projeções ---------- */
+.projection-disclaimer { margin: 0; font-size: var(--text-sm); }
+/* R2-PRJ-4: phones keep the pinned "Patrimônio em N meses" strip and drop the first KPI that repeated it. */
+@media (max-width: 980px) {
+  .projection-results > .stat-strip > .stat:first-child { display: none; }
+}
+
+/* ---------- Mercado ---------- */
+/* R2-MKT-2: a lone currency stays card-sized (auto-fill keeps the empty tracks) and the section note reads as a note. */
+.market-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.market-rate-group > div > p.muted { margin: 2px 0 0; font-size: var(--text-sm); }
+/* R2-MKT-4: the standard gap between the Valor field and the De / Para row. */
+.converter > .field + .converter-grid { margin-top: var(--space-4); }
+@media (max-width: 620px) {
+  /* R2-MKT-3: the refresh button keeps its natural width under the status instead of a full-width slab. */
+  .market-header .page-header-actions { justify-content: flex-start; }
+  .market-header .page-header-actions > .btn { flex: 0 0 auto; width: auto; }
+}
+@media (max-width: 480px) {
+  .indicator-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+  .indicator { padding: var(--space-3); }
+  .indicator-value { font-size: var(--text-lg); }
+}
+
+/* ---------- Configurações ---------- */
+/* R2-CFG-2: explanatory paragraphs and hints keep a readable measure. */
+.settings-content :is(p.muted, .field-hint, .pref-text small) { max-width: 68ch; }
+.settings-disclosure > summary { width: fit-content; color: var(--accent-text, var(--accent)); font-size: var(--text-sm); font-weight: 600; cursor: pointer; }
+.settings-disclosure > summary .muted { color: var(--muted); font-weight: 500; }
+.settings-disclosure > summary:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; border-radius: var(--radius-xs); }
+.settings-disclosure[open] > summary { margin-bottom: var(--space-3); }
+.settings-market .card-header { align-items: center; }
+/* R2-CFG-3: the reason a Save is disabled, in the neutral hint colour (the green stays for "salvas"). */
+.save-confirmation.is-hint { color: var(--muted); }
+/* R2-CFG-1: the preview's label is a normal grid item here (the hero grid-area does not apply), the delta line wraps,
+   and phones reserve room for the "Exemplo" tag. */
+.appearance-preview-hero .hero-label { grid-area: auto; }
+.appearance-preview-hero .row { flex-wrap: wrap; justify-content: flex-start; gap: var(--space-1) var(--space-2); }
+@media (max-width: 480px) {
+  .appearance-preview { padding-top: calc(var(--space-4) + 22px); }
+}
+
+/* ---------- Setup ---------- */
+/* R2-SET-4: the Item column shares the row background (no darker header band). */
+.plan-table tbody th, .plan-table tfoot th { background: transparent; }
+/* R2-SET-5: the brand lockup (mark + wordmark) above the first screen's title. */
+.setup-title { display: grid; justify-items: start; gap: var(--space-2); }
+.setup-lockup .brand-name { font-size: var(--text-md); }
+/* R2-SET-1: step 2 footer — desktop in one row; phones: teto line, full-width primary, then Voltar · Pular as text. */
+.wizard-plan-actions {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; grid-template-areas: "skip note back apply";
+  align-items: center; gap: var(--space-2) var(--space-3); margin-top: var(--space-6);
+}
+.wizard-plan-actions .wizard-skip { grid-area: skip; }
+.wizard-plan-actions .wizard-footer-note { grid-area: note; flex: none; text-align: right; }
+.wizard-plan-actions .wizard-back { grid-area: back; }
+.wizard-plan-actions .wizard-apply { grid-area: apply; }
+@media (max-width: 620px) {
+  .wizard-plan-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-areas: "note note" "apply apply" "back skip"; gap: var(--space-2); margin-top: 0; }
+  .wizard-plan-actions.no-apply { grid-template-areas: "note note" "skip skip" "back back"; }
+  .wizard-plan-actions .btn { width: 100%; }
+  .wizard-plan-actions .wizard-footer-note { text-align: center; font-size: var(--text-xs); }
+  .wizard-plan-actions:not(.no-apply) :is(.wizard-back, .wizard-skip) { min-height: 40px; border-color: transparent; background: transparent; }
+}
+
+/* ---------- Tour ---------- */
+.tour-keys { white-space: normal; }
+@media (max-width: 980px) {
+  html.tour-running body { padding-bottom: 70vh; }
+}
+
+/* =====================================================================================================================
+   R3 fix round · FE-Insights. Tokens only; same layer (app).
+   ===================================================================================================================== */
+
+/* ---------- Relatórios ---------- */
+/* R3-REL-1: phones rank the bars as a list — the full label on its own line, then the bar with the value at its end. */
+.ranked-bars { display: grid; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+.ranked-bars-item {
+  display: grid; gap: 6px; width: 100%; min-width: 0; min-height: 44px; padding: var(--space-2) 0;
+  border: 0; border-radius: var(--radius-sm); color: inherit; background: transparent; font: inherit; text-align: left;
+}
+button.ranked-bars-item { cursor: pointer; }
+button.ranked-bars-item:hover { background: var(--panel-hover); }
+button.ranked-bars-item:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.ranked-bars-label { overflow: hidden; color: var(--text); font-size: var(--text-sm); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.ranked-bars-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(7.5em, auto); align-items: center; gap: var(--space-2); }
+.ranked-bars-track { height: 10px; overflow: hidden; border-radius: var(--radius-pill); background: var(--panel-3); }
+.ranked-bars-track > span { display: block; height: 100%; border-radius: inherit; background: var(--series, var(--accent)); }
+.ranked-bars-value { color: var(--text-soft); text-align: right; font-size: var(--text-sm); font-feature-settings: var(--numeric); white-space: nowrap; }
+/* R3-REL-3: a single category is one stat line instead of a full ring. */
+.report-single-share { margin: var(--space-2) 0 0; color: var(--text-soft); font-feature-settings: var(--numeric); }
+.report-single-share b { color: var(--text); font-weight: 650; }
+/* R3-REL-2: the numbers on screen belong to the previous range until the chosen one loads. */
+.report-stale-note { max-width: 40em; margin: calc(var(--space-2) * -1) 0 var(--space-3); color: var(--text-soft); font-size: var(--text-sm); }
+.report-body.is-stale :is(.report-kpis, .report-grid) { opacity: 0.6; }
+@media print { .report-body.is-stale :is(.report-kpis, .report-grid) { opacity: 1; } }
+/* R3-REL-5 / R3-PRJ-4 / R2-CFG-2: explanatory lines stay under ~80 characters (em-based, so it holds for any size). */
+.report-card > .card-header .muted, .plan-report-warning p,
+.projections-page .card-header p.muted, .scenario-preset-note, .projections-page .milestone small.muted, .projections-page .ui-alert-text,
+.market-rate-group > div > p.muted { max-width: 40em; }
+/* Same specificity as the R2 rule (68ch) it replaces, declared later. */
+.settings-content :is(p.muted, .field-hint, .pref-text small) { max-width: 40em; }
+.settings-content p { max-width: 40em; }
+
+/* ---------- Projeções ---------- */
+/* R3-PRJ-3: with the first KPI hidden on phones, the last of the three visible cards spans the row (no orphan). */
+@media (max-width: 620px) {
+  .projection-results > .stat-strip > .stat:nth-child(4):last-child { grid-column: 1 / -1; }
+}
+
+/* ---------- Mercado ---------- */
+.market-saved-note { margin: calc(var(--space-2) * -1) 0 0; font-size: var(--text-sm); }
+
+/* ---------- Configurações ---------- */
+/* R3-CFG-1: the plan owns the teto (read-only) with "Editar plano" beside it. */
+.settings-plan-limit { display: grid; gap: var(--space-1); justify-items: start; min-width: 0; }
+.settings-plan-limit .field { width: 100%; }
+.settings-plan-limit input[readonly] { color: var(--text-soft); background: var(--panel-2); cursor: default; }
+.settings-plan-limit > .btn { min-height: 44px; }
+.projections-page .milestone > div > small.muted { display: inline-block; }

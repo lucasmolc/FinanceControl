@@ -1,0 +1,30 @@
+/* Coarse pointers (touch): every target at least 44px, whatever the density. Loaded in the last layer so it wins. */
+@media (pointer: coarse) {
+  .btn, .btn.small, .nav a, .segmented button, input, select, textarea, .accent-swatch, button.legend-item, button.ticker-item { min-height: 44px; }
+  input[type="range"] { min-height: 44px; }
+  .icon-btn, .toast > .icon-btn { width: 44px; height: 44px; }
+  .row-actions { gap: var(--space-1); }
+  .error-banner > button { min-width: 44px; min-height: 44px; }
+  input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; min-height: 0; }
+  .data-table td.actions { padding-top: 2px; padding-bottom: 2px; }
+}
+
+/* R3 decision 4 (R3-PAINEL-4, R3-LANC-4): text links, small selects and the ticker are tap targets too. Phone widths
+   count as touch even when the pointer media query is not reported (emulated/hybrid devices). */
+@media (pointer: coarse), (max-width: 620px) {
+  select, .size-sm.ui-control, .size-sm > .ui-control { min-height: 44px; }
+  .widget-link { display: inline-flex; align-items: center; min-height: 44px; }
+  a.ticker-item, button.ticker-item { min-height: 44px; }
+}
+
+/* No hover on touch: quiet danger icons keep a faint coral tint so their meaning is visible without hovering */
+@media (hover: none) {
+  .icon-btn.danger { color: var(--danger-quiet); }
+}
+
+/* Forced colors (Windows high contrast): keep structure visible where we rely on backgrounds */
+@media (forced-colors: active) {
+  .card, .stat, .toast, .visual-card, .hero-balance, .widget, .month-switcher, .ticker { border: 1px solid CanvasText; }
+  .progress > span, .legend-swatch { background: Highlight; forced-color-adjust: none; }
+  .nav a[aria-current="page"] { outline: 2px solid Highlight; }
+}

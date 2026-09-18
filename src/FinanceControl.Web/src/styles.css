@@ -1,0 +1,24 @@
+/* LMM Finance Control v1.2 · "Cofre Noturno" (documented in DESIGN.md).
+   Cascade layers keep the order explicit: theme tokens → base → app (shell, pages, features) → components
+   (the ui library in ./styles/ui.css, owned by the component library) → adapt (touch targets win last).
+   Unlayered rules beat every layer, so keep new rules inside a layer. */
+@layer theme, base, app, components, adapt;
+@import "@fontsource-variable/inter/wght.css";
+@import "./styles/ui.css";
+@import "./styles/tokens.css" layer(theme);
+@import "./styles/themes.css" layer(theme);
+@import "./styles/base.css" layer(base);
+@import "./styles/motion.css" layer(base);
+@import "./styles/shell.css" layer(app);
+@import "./styles/components.css" layer(app);
+@import "./styles/forms.css" layer(app);
+@import "./styles/tables.css" layer(app);
+@import "./styles/feedback.css" layer(app);
+@import "./styles/dataviz.css" layer(app);
+@import "./styles/finance.css" layer(app);
+@import "./styles/features.css" layer(app);
+@import "./styles/appearance.css" layer(app);
+@import "./styles/pages-a.css" layer(app);
+@import "./styles/pages-b.css" layer(app);
+@import "./styles/pages-c.css" layer(app);
+@import "./styles/touch.css" layer(adapt);

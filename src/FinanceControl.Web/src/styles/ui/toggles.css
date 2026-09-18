@@ -1,0 +1,76 @@
+/* Switch, Checkbox, RadioCards, Segmented */
+
+/* ---------- Switch ---------- */
+.ui-switch {
+  --switch-w: 40px; --switch-h: 24px; --thumb: 18px;
+  position: relative; flex: none; display: inline-flex; align-items: center;
+  width: var(--switch-w); height: var(--switch-h); padding: 0;
+  border: 1px solid var(--line-strong); border-radius: var(--radius-pill);
+  background: var(--panel-3); cursor: pointer;
+  transition: background-color var(--duration, 160ms) var(--ease-out), border-color var(--duration, 160ms) var(--ease-out);
+}
+.ui-switch.size-sm { --switch-w: 32px; --switch-h: 20px; --thumb: 14px; }
+.ui-switch.size-lg { --switch-w: 48px; --switch-h: 28px; --thumb: 22px; }
+.ui-switch-thumb {
+  position: absolute; left: 2px; width: var(--thumb); height: var(--thumb);
+  border-radius: 50%; background: var(--muted);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  transition: transform var(--duration, 160ms) var(--ease-out), background-color var(--duration, 160ms) var(--ease-out);
+}
+.ui-switch[aria-checked="true"] { border-color: var(--accent-strong); background: var(--accent-strong); }
+.ui-switch[aria-checked="true"] .ui-switch-thumb { transform: translateX(calc(var(--switch-w) - var(--thumb) - 6px)); background: var(--on-accent); }
+.ui-switch:disabled { cursor: not-allowed; opacity: 0.5; }
+.ui-switch-field, .ui-checkbox-field { display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding: 6px 0; }
+.ui-switch-field > .ui-switch { margin-top: 1px; }
+.ui-switch-text, .ui-checkbox-text { min-width: 0; }
+.ui-switch-text label, .ui-checkbox-text label { color: var(--text-soft); font-size: var(--text-md); font-weight: 550; line-height: 1.4; cursor: pointer; }
+.ui-switch-field.is-disabled label, .ui-checkbox-field.is-disabled label { cursor: not-allowed; opacity: 0.6; }
+
+/* ---------- Checkbox (styled native input) ---------- */
+.ui-checkbox { --box: 18px; position: relative; display: inline-grid; flex: none; width: var(--box); height: var(--box); margin-top: 1px; }
+.ui-checkbox.size-sm { --box: 16px; }
+.ui-checkbox.size-lg { --box: 22px; }
+.ui-checkbox > input[type="checkbox"] {
+  position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0;
+  appearance: none; -webkit-appearance: none;
+  border: 1.5px solid var(--field-border, var(--line-strong)); border-radius: var(--radius-xs);
+  background: var(--field, var(--panel)); cursor: pointer;
+}
+.ui-checkbox > input:hover { border-color: var(--accent); }
+.ui-checkbox > input:checked, .ui-checkbox > input:indeterminate { border-color: var(--accent-strong); background: var(--accent-strong); }
+.ui-checkbox > input:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.ui-checkbox > input:disabled { cursor: not-allowed; opacity: 0.5; }
+.ui-checkbox-box { position: absolute; inset: 0; display: grid; place-items: center; color: var(--on-accent); pointer-events: none; opacity: 0; transform: scale(0.6); transition: opacity var(--duration-fast, 120ms) var(--ease-out), transform var(--duration-fast, 120ms) var(--ease-out); }
+.ui-checkbox > input:checked + .ui-checkbox-box, .ui-checkbox > input:indeterminate + .ui-checkbox-box { opacity: 1; transform: none; }
+
+/* ---------- RadioCards ---------- */
+.ui-radio-cards { display: grid; gap: var(--space-2); }
+.ui-radio-cards.cols-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); }
+.ui-radio-cards.cols-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+.ui-radio-cards.cols-4 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 130px), 1fr)); }
+.ui-radio-card {
+  position: relative; display: flex; align-items: flex-start; gap: var(--space-3);
+  min-width: 0; padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-strong); border-radius: var(--radius-md);
+  background: var(--panel); cursor: pointer;
+  transition: border-color var(--duration, 160ms) var(--ease-out), background-color var(--duration, 160ms) var(--ease-out);
+}
+.ui-radio-card:hover { border-color: var(--accent-line); }
+.ui-radio-card.is-checked { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.ui-radio-card.is-disabled { cursor: not-allowed; opacity: 0.55; }
+.ui-radio-card > input[type="radio"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ui-radio-card:has(> input:focus-visible) { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
+.ui-radio-card-icon { display: inline-grid; flex: none; place-items: center; color: var(--accent-text, var(--accent)); }
+.ui-radio-card-text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.ui-radio-card-label { color: var(--text); font-size: var(--text-md); font-weight: 650; }
+.ui-radio-card-dot { flex: none; width: 18px; height: 18px; margin-top: 1px; border: 1.5px solid var(--line-strong); border-radius: 50%; }
+.ui-radio-card.is-checked .ui-radio-card-dot { border: 5px solid var(--accent-strong); background: var(--on-accent); }
+.ui-radio-cards.size-sm .ui-radio-card { padding: var(--space-2) var(--space-3); }
+
+/* ---------- Segmented (radio group; base look from .segmented) ---------- */
+.ui-segmented button { display: inline-flex; align-items: center; gap: 6px; }
+.ui-segmented [role="radio"][aria-checked="true"] { color: var(--text); background: var(--panel-3); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.ui-segmented.full-width { display: flex; width: 100%; }
+.ui-segmented.full-width > button { flex: 1 1 0; justify-content: center; }
+.ui-segmented.size-sm button { min-height: 28px; padding: 3px 10px; font-size: var(--text-xs); }
+.ui-segmented.size-lg button { min-height: 40px; padding: 8px 16px; font-size: var(--text-md); }

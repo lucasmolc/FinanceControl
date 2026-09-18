@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <ProjectReference Include="..\FinanceControl.Application\FinanceControl.Application.csproj" />
+    <ProjectReference Include="..\FinanceControl.Infrastructure\FinanceControl.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('..\FinanceControl.Web\dist')">
+    <None Include="..\FinanceControl.Web\dist\**\*"
+             Link="web\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

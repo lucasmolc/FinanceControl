@@ -1,0 +1,40 @@
+/* Select, Combobox, IconPicker trigger */
+.ui-select, .ui-iconpicker { position: relative; min-width: 0; }
+.ui-select-trigger {
+  width: 100%; cursor: pointer;
+  font: inherit; font-size: inherit;
+}
+.ui-select-trigger:disabled { cursor: not-allowed; opacity: 0.6; }
+.ui-select-value { display: flex; flex: 1 1 auto; align-items: center; gap: var(--space-2); min-width: 0; }
+.ui-select-value.is-placeholder { color: var(--placeholder, var(--muted)); }
+.ui-select-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-select-chevron { flex: none; color: var(--muted); transition: transform var(--duration, 160ms) var(--ease-out); }
+.is-open > .ui-select-trigger .ui-select-chevron, .ui-select-trigger[aria-expanded="true"] .ui-select-chevron { transform: rotate(180deg); }
+
+.ui-combobox { position: relative; flex-wrap: wrap; row-gap: 4px; cursor: text; }
+.ui-combobox.is-multiple { padding-block: 4px; }
+.ui-combobox-search { flex: none; color: var(--muted); }
+.ui-combobox-input { flex: 1 1 60px !important; }
+.ui-combobox.is-multiple .ui-combobox-input { flex-basis: 24px !important; }
+.ui-combobox-clear, .ui-combobox-toggle {
+  display: inline-grid; flex: none; place-items: center; width: 28px; height: 28px; padding: 0;
+  border: 0; border-radius: var(--radius-sm); color: var(--muted); background: transparent;
+}
+.ui-combobox-clear:hover, .ui-combobox-toggle:hover { color: var(--text); background: var(--panel-3); }
+.ui-combobox-toggle svg { transition: transform var(--duration, 160ms) var(--ease-out); }
+.ui-combobox.is-open .ui-combobox-toggle svg { transform: rotate(180deg); }
+
+.ui-chip {
+  display: inline-flex; align-items: center; gap: 4px; max-width: 100%;
+  min-height: 26px; padding: 0 4px 0 8px;
+  border: 1px solid var(--accent-line); border-radius: var(--radius-pill);
+  color: var(--text); background: var(--accent-soft);
+  font-size: var(--text-sm); font-weight: 600;
+}
+.ui-chip.is-more { padding-right: 8px; border-color: var(--line-strong); background: var(--panel-3); }
+.ui-chip-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ui-chip-remove {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0;
+  border: 0; border-radius: 50%; color: var(--text-soft); background: transparent;
+}
+.ui-chip-remove:hover { color: var(--text); background: var(--panel-3); }

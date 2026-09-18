@@ -1,0 +1,63 @@
+/* Feedback: toasts (MEL-28).
+   Markup: .toast-region > .toast.(success|error|info)[.is-leaving|.is-paused]
+             > (.toast-icon + .toast-body > (p + .toast-actions > button.btn.small.ghost)) + button.icon-btn + .toast-progress
+   The progress bar runs for --toast-duration (inline, e.g. style="--toast-duration: 4500ms") and pauses while the toast
+   is hovered/focused or .is-paused (the JS timer must pause too). Bottom-right on desktop, top on phones (safe-area aware,
+   never under the dock). */
+.toast-region {
+  position: fixed; z-index: 120;
+  right: max(var(--space-5), env(safe-area-inset-right, 0px)); bottom: max(var(--space-5), env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2);
+  width: min(360px, calc(100vw - 2 * var(--space-4)));
+  pointer-events: none;
+}
+.toast-region:empty { display: none; }
+.toast {
+  --toast-tone: var(--accent);
+  --toast-duration: 4500ms;
+  position: relative;
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 10px;
+  width: 100%; padding: 12px 8px 14px 12px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--toast-tone) 34%, var(--glass-border));
+  border-radius: var(--radius-md);
+  color: var(--text);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--toast-tone) 9%, var(--panel-2)), var(--panel-2));
+  box-shadow: var(--shadow-float), 0 1px 0 var(--glass-highlight) inset;
+  font-size: var(--text-md); line-height: 1.45;
+  pointer-events: auto;
+  animation: toast-in var(--duration-slow) var(--ease-out) backwards;
+}
+.toast.success { --toast-tone: var(--positive); }
+.toast.error { --toast-tone: var(--danger); }
+.toast.info { --toast-tone: var(--accent); }
+.toast.is-leaving { animation: toast-out var(--duration-base) var(--ease-in-out) forwards; pointer-events: none; }
+.toast-icon { display: grid; width: 26px; height: 26px; place-items: center; border-radius: 50%; color: var(--toast-tone); background: color-mix(in srgb, var(--toast-tone) 16%, transparent); }
+.toast-icon svg { width: 15px; height: 15px; }
+.toast-body { min-width: 0; padding-top: 2px; }
+.toast-body p { margin: 0; color: var(--text); overflow-wrap: break-word; }
+.toast-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.toast-actions .btn { border-color: color-mix(in srgb, var(--toast-tone) 45%, transparent); color: var(--text); font-weight: 700; }
+.toast-actions .btn:hover { background: color-mix(in srgb, var(--toast-tone) 14%, transparent); }
+.toast > .icon-btn { width: 30px; height: 30px; margin-top: -2px; }
+.toast-progress { position: absolute; right: 0; bottom: 0; left: 0; height: 3px; background: color-mix(in srgb, var(--toast-tone) 14%, transparent); }
+.toast-progress::after, .toast-progress > span {
+  content: ""; position: absolute; inset: 0; display: block;
+  background: var(--toast-tone);
+  transform-origin: left center;
+  animation: toast-progress var(--toast-duration) linear forwards;
+}
+.toast-progress:has(> span)::after { content: none; }
+.toast:hover .toast-progress::after, .toast:hover .toast-progress > span,
+.toast:focus-within .toast-progress::after, .toast:focus-within .toast-progress > span,
+.toast.is-paused .toast-progress::after, .toast.is-paused .toast-progress > span { animation-play-state: paused; }
+
+@media (max-width: 980px) {
+  .toast-region {
+    top: max(var(--space-3), env(safe-area-inset-top, 0px)); bottom: auto;
+    right: 50%; transform: translateX(50%);
+    flex-direction: column-reverse; align-items: stretch;
+    width: min(420px, calc(100vw - 2 * var(--space-3)));
+  }
+  .toast { animation-name: toast-in-top; }
+}
