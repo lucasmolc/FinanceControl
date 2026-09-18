@@ -125,6 +125,23 @@ Para usar um computador como servidor e acessar pelo celular ou por outros PCs *
 
 A aplicação **não tem login**: quem acessa a porta lê e altera todos os dados. Nunca encaminhe a porta no roteador. O `iniciar.cmd` aceita apenas localhost, o nome e os IPs atuais do computador (mais `HOSTS_EXTRAS`), o que bloqueia ataques de *DNS rebinding*. O servidor usa a mesma porta do `npm run dev`: rode um de cada vez. Para atualizar, pare o servidor (`Ctrl+C`) e publique de novo.
 
+**Manter o servidor no ar.** Bloquear a tela (`Win+L`) ou deixar o monitor desligar não interrompe o servidor. O que interrompe:
+
+| Situação | Servidor continua? |
+|---|---|
+| Tela bloqueada ou monitor desligado | ✅ sim |
+| Suspensão ou hibernação (automática ou ao fechar a tampa) | ❌ não |
+| Sair da conta ou reiniciar | ❌ não, até entrar de novo (com o atalho em `shell:startup`, ele volta sozinho) |
+
+Para não suspender quando o computador estiver na tomada, rode no PowerShell:
+
+```powershell
+powercfg /change standby-timeout-ac 0
+powercfg /change hibernate-timeout-ac 0
+```
+
+Em notebooks, ajuste também **Painel de Controle → Opções de energia → Escolher a função do fechamento da tampa → Conectado: Não fazer nada**. Para conferir, bloqueie o computador e abra `http://NOME-DO-PC:5074` pelo celular.
+
 ---
 
 ## 🧰 Tecnologia
