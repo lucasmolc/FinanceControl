@@ -20,7 +20,11 @@ public static class ModuleSchemas
             Field.Text("notes", 500),
             Field.Currency("currency"),
             Field.Decimal("exchange_rate"),
-            Field.Identifier("brand")),
+            Field.Identifier("brand"),
+            // Parcelamento (v1.4): só na criação. O total da compra é opcional — sem ele vale valor da parcela x parcelas.
+            Field.Integer("installment_count", InstallmentRules.MinCount, InstallmentRules.MaxCount, Messages.InstallmentCountRange),
+            Field.Integer("installment_number", 1, InstallmentRules.MaxCount, Messages.InstallmentNumberRange),
+            Field.Money(InstallmentTotalField, MoneyRule.Positive)),
         new InputSchema("bills", true,
             Field.Text("name", 120, required: true),
             Field.Money("amount_cents", MoneyRule.Positive, required: true),
@@ -65,7 +69,9 @@ public static class ModuleSchemas
             Field.Flag("active"),
             Field.Identifier("brand"),
             new FieldSpec("network", FieldType.Choice) { Options = FinanceEnums.CardNetworks },
-            Field.Color("color")),
+            Field.Color("color"),
+            // Últimos 4 dígitos: identificam o cartão nas faturas com adicionais (v1.4).
+            Field.Digits("last_digits", 4, Messages.CardDigits)),
         new InputSchema("bank-accounts", true,
             Field.Text("name", 120, required: true),
             Field.Text("institution", 120, required: true),
@@ -104,6 +110,12 @@ public static class ModuleSchemas
 
     /// <summary>Campo de controle de PUT /api/goals/{id} (não é coluna): confirma desligar o cálculo automático da reserva.</summary>
     public const string DetachAutoField = "detach_auto";
+
+    /// <summary>Campo de controle de POST /api/transactions (não é coluna): valor total da compra parcelada.</summary>
+    public const string InstallmentTotalField = "installment_total_cents";
+
+    /// <summary>Campos de esquema que são comandos, não colunas: nunca chegam ao banco.</summary>
+    public static readonly IReadOnlySet<string> ControlFields = new HashSet<string>([DetachAutoField, InstallmentTotalField], StringComparer.Ordinal);
 
     public static readonly InputSchema Checklist = new("checklist", false,
         Field.Integer("bill_id", 1, long.MaxValue, Messages.Identifier, required: true),

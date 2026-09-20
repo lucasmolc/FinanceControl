@@ -1,6 +1,6 @@
 namespace FinanceControl.Application.Validation;
 
-public enum FieldType { Text, Integer, Money, Date, Month, Boolean, Choice, Reference, Currency, Identifier, Color, LogoData, Decimal }
+public enum FieldType { Text, Integer, Money, Date, Month, Boolean, Choice, Reference, Currency, Identifier, Color, LogoData, Decimal, Digits }
 public enum MoneyRule { Any, NonNegative, Positive }
 public enum ReferenceTarget { Category, Card, ActiveBankAccount, ActiveCard }
 public enum ValidationMode { Create, Update }
@@ -60,6 +60,8 @@ public static class Field
     public static FieldSpec LogoData(string name) => new(name, FieldType.LogoData);
     /// <summary>Número decimal positivo (texto com ponto/vírgula ou número JSON), normalizado como texto.</summary>
     public static FieldSpec Decimal(string name, bool required = false) => new(name, FieldType.Decimal) { Required = required, Nullable = !required };
+    /// <summary>Exatamente <paramref name="length"/> dígitos (os últimos do cartão); vazio ou null limpa.</summary>
+    public static FieldSpec Digits(string name, int length, string message) => new(name, FieldType.Digits) { MaxLength = length, RangeMessage = message };
 }
 
 public sealed record ReferenceCheck(string Field, ReferenceTarget Target, long Id);

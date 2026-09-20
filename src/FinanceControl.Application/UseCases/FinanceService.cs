@@ -47,10 +47,19 @@ public sealed partial class FinanceService(IFinanceStore store, TimeProvider tim
         var values = NormalizeCardPurchase(input, null);
         if (!values.IsSuccess) return values.Failure<long>();
         if (CardPurchaseWithoutCard(input, values.Value!, null)) return OperationResult<long>.Invalid("card_id", Messages.CardRequired);
-        var closed = ClosedMonthError<long>("date", input.Text("date"));
-        if (closed is not null) return closed;
+        var plan = ReadInstallmentPlan(input, values.Value!);
+        if (!plan.IsSuccess) return plan.Failure<long>();
+        // Lançamento simples: basta o mês dele estar aberto. Parcelado: todos os meses da série (conferidos adiante).
+        if (plan.Value is null && ClosedMonthError<long>("date", input.Text("date")) is { } closed) return closed;
         var withCurrency = PrepareTransactionCurrency(input, values.Value!, null);
-        return withCurrency.IsSuccess ? store.CreateRecord(module, withCurrency.Value!) : withCurrency.Failure<long>();
+        if (!withCurrency.IsSuccess) return withCurrency.Failure<long>();
+        if (plan.Value is null) return store.CreateRecord(module, withCurrency.Value!);
+
+        var installments = BuildInstallments(withCurrency.Value!, plan.Value);
+        if (!installments.IsSuccess) return installments.Failure<long>();
+        var created = store.CreateTransactions(installments.Value!);
+        // O id devolvido é o da parcela informada pelo usuário, que é a que ele acabou de lançar.
+        return created.IsSuccess ? OperationResult<long>.Success(created.Value![plan.Value.Number - 1]) : created.Failure<long>();
     }
 
     public OperationResult<bool> UpdateRecord(string module, long id, RecordData data)
@@ -70,6 +79,9 @@ public sealed partial class FinanceService(IFinanceStore store, TimeProvider tim
             if (MissingBillingDate(frequency, nextBillingDate)) return OperationResult<bool>.Invalid("next_billing_date", Messages.NextBillingDateRequired);
         }
         if (module != "transactions") return UpdatePreparedRecord(module, id, input);
+        // O parcelamento define quantos lançamentos existem, então só pode ser escolhido na criação.
+        if (new[] { "installment_count", "installment_number", ModuleSchemas.InstallmentTotalField }.FirstOrDefault(input.Has) is { } installmentField)
+            return OperationResult<bool>.Invalid(installmentField, Messages.InstallmentOnUpdate);
 
         var existing = store.FindTransaction(id, removed: false);
         if (existing is null) return OperationResult<bool>.NotFound();
@@ -349,6 +361,22 @@ public sealed partial class FinanceService(IFinanceStore store, TimeProvider tim
         var safetyCopy = $"antes-da-restauracao-{LocalNow.ToString("yyyyMMdd-HHmmss", Invariant)}.db";
         return store.RestoreBackup(new RestorePlan(tables.Value!, safetyCopy));
     }
+
+    /// <summary>
+    /// Zera a conta: apaga todos os dados financeiros e devolve o app ao primeiro acesso (setup por fazer, tour por
+    /// ver, categorias padrão). O login e a senha continuam; só o conteúdo do banco do usuário é apagado, sempre
+    /// depois de gravar uma cópia automática ao lado do banco.
+    /// </summary>
+    public OperationResult<ResetResult> ResetAccount(ResetCommand command)
+    {
+        if (!string.Equals(command.Confirmation?.Trim(), ResetConfirmationText, StringComparison.Ordinal))
+            return OperationResult<ResetResult>.Invalid("confirmation", Messages.ResetConfirmation);
+        var safetyCopy = store.ResetAccountData($"antes-de-zerar-{LocalNow.ToString("yyyyMMdd-HHmmss", Invariant)}.db");
+        return OperationResult<ResetResult>.Success(new ResetResult(true, safetyCopy));
+    }
+
+    /// <summary>Texto que o usuário digita para confirmar o reset (a interface exibe exatamente assim).</summary>
+    public const string ResetConfirmationText = "APAGAR TUDO";
 
     /// <summary>Assinaturas anuais e semanais precisam de uma data de referência para a próxima cobrança.</summary>
     private static bool MissingBillingDate(string frequency, string? nextBillingDate) =>

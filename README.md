@@ -23,10 +23,13 @@ Lançamentos, contas a pagar, cartões e faturas, metas, investimentos, múltipl
 
 ### O dia a dia
 - **Painel personalizável** — saldo do mês, teto de gastos, ritmo de gastos, fluxo de 6 meses, gastos por categoria, orçamento, próximos vencimentos (contas e faturas), metas, formas de pagamento e plano. Widgets podem ser reordenados, ocultados e restaurados.
-- **Lançamentos** — receitas, despesas e investimentos com categoria, conta, forma de pagamento e moeda; agrupados por dia, com ações em lote (categorizar, remover) e **Desfazer** em tudo.
+- **Lançamentos** — receitas, despesas e investimentos com categoria, conta, forma de pagamento e moeda; agrupados por dia, com ações em lote (categorizar, definir o cartão, remover) e **Desfazer** em tudo.
+- **Importar fatura e extrato** — leia o arquivo do banco em CSV, OFX ou QIF e vire um lançamento por linha. A conferência mostra o que é novo, o que já existe e o que já foi importado antes de gravar; nada entra duas vezes. Compras de setembro que vêm na fatura de outubro continuam sendo gasto de setembro.
+- **Compras parceladas** — informe "6/10" e o valor da parcela ou o total: as dez parcelas são lançadas de uma vez, nos meses anteriores e futuros, cada uma na sua fatura. Vale também para Pix, boleto e débito.
 - **Contas a pagar** — checklist mensal com status claros ("Vence em 28/09 (10 dias)", "Vencida há 3 dias"), débito automático e faturas de cartão vencidas na mesma lista.
-- **Cartões e faturas** — ciclo de fechamento/vencimento, fatura atual, fechadas e futuras, pagamento por conta bancária e limite usado.
-- **Assinaturas** — Netflix, academia, Amazon… com equivalente mensal em reais, cobrança pendente e lançamento com um toque.
+- **Cartões e faturas** — ciclo de fechamento/vencimento, fatura atual, fechadas e futuras, pagamento por conta bancária e limite usado. Faturas ainda abertas mostram também as cobranças de assinaturas **previstas** para o ciclo.
+- **Assinaturas** — Netflix, academia, Amazon… com equivalente mensal em reais, cobrança pendente e lançamento com um toque. É o caminho para o gasto mensal **sem prazo**: mudar o valor vale só para as próximas cobranças, e desativar encerra.
+- **Ajuda em cada tela** — um botão discreto no topo explica o que cada função faz e a melhor forma de usá-la.
 - **Contas bancárias** — saldo atual, extrato com "Saldo após", o que ainda vai ser debitado no mês e saldo projetado.
 - **Metas e investimentos** — aportes, resgates, histórico estornável, alocação por tipo/liquidez e rendimento estimado ("Rende 110% do CDI ≈ 11,7% ao ano").
 - **Fechar mês** — lista as pendências e congela o mês; alterações com data nele ficam bloqueadas até reabri-lo.
@@ -398,7 +401,7 @@ src/
     src/features/                 páginas e modelos por funcionalidade
     src/styles/                   CSS em camadas (theme → base → app → components → adapt)
 tests/FinanceControl.Api.Tests/   domínio, migrações e integração HTTP
-docs/                             arquitetura, API, migrações e histórico de melhorias
+docs/                             arquitetura, API, fluxos, migrações e histórico de melhorias
 ```
 
 ---
@@ -431,7 +434,8 @@ Documentação completa em [docs/API.md](docs/API.md). Principais rotas:
 | Mês | `POST /api/months/{AAAA-MM}/close`, `POST /api/months/{AAAA-MM}/reopen`, `GET /api/months/closings` |
 | Planejamento | `POST /api/setup`, `POST/DELETE /api/plan`, `PUT /api/settings`, `POST /api/settings/emergency-goal` e `/freedom-goal` |
 | Análises | `GET /api/reports` (+ CSV), `GET /api/projections/base`, `GET /api/market`, `POST /api/market/refresh`, `PUT /api/market/rates/{moeda}` |
-| Backup | `GET /api/backup`, `GET /api/backup/database`, `POST /api/backup/restore` |
+| Importação | `POST /api/imports/preview`, `POST /api/imports/commit` |
+| Backup e reset | `GET /api/backup`, `GET /api/backup/database`, `POST /api/backup/restore`, `POST /api/reset` |
 
 Todas as rotas, exceto `GET /api/health` e as de conta, exigem sessão (`401` sem ela); as que alteram dados exigem também o cabeçalho `X-Requested-With: FinanceControl`. Erros seguem ProblemDetails, com o campo inválido e a mensagem em português.
 
@@ -452,8 +456,8 @@ Todas as rotas, exceto `GET /api/health` e as de conta, exigem sessão (`401` se
 
 ## ✅ Qualidade
 
-- **748 testes** no frontend e **366** no backend (incluindo autenticação, isolamento entre usuários e as proteções da API), com `npm run check` verde e zero avisos.
-- Migrações aditivas e testadas sobre bancos reais (atual: `009_bill_active_since`).
+- **776 testes** no frontend e **471** no backend (incluindo autenticação, isolamento entre usuários e as proteções da API), com `npm run check` verde e zero avisos.
+- Migrações aditivas e testadas sobre bancos reais (atual: `010_imports_and_installments`).
 - Interface avaliada em quatro rodadas de crítica de design (heurísticas de usabilidade, acessibilidade e responsividade) — notas e histórico em [docs/MELHORIAS.md](docs/MELHORIAS.md).
 
 ---
@@ -465,6 +469,7 @@ Todas as rotas, exceto `GET /api/health` e as de conta, exigem sessão (`401` se
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | camadas, portas e decisões |
 | [API.md](docs/API.md) | todas as rotas, formatos e erros |
 | [MIGRATIONS.md](docs/MIGRATIONS.md) | histórico do esquema do banco |
+| [FLUXOS.md](docs/FLUXOS.md) | **todos os fluxos do sistema em detalhe**, do primeiro acesso ao reset |
 | [MELHORIAS.md](docs/MELHORIAS.md) | rodadas de melhoria e notas de cada tela |
 | [DESIGN.md](src/FinanceControl.Web/DESIGN.md) | sistema de design: tokens, componentes e movimento |
 

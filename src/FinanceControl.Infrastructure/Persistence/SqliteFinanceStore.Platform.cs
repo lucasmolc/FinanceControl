@@ -65,6 +65,24 @@ public sealed partial class SqliteFinanceStore
         return connection.Query<Card>("SELECT * FROM cards WHERE active=1 ORDER BY name, id").AsList();
     }
 
+    public IReadOnlyList<Transaction> ListTransactionsOf(long? cardId, long? accountId, string fromDate, string toDate)
+    {
+        var filter = cardId is not null ? "t.card_id=@cardId" : "t.account_id=@accountId";
+        using var connection = factory.CreateOpenConnection();
+        return connection.Query<Transaction>(
+            $"{RecordModuleCatalog.TransactionSelect} AND {filter} AND t.date>=@fromDate AND t.date<=@toDate ORDER BY t.date,t.id",
+            new { cardId, accountId, fromDate, toDate }).AsList();
+    }
+
+    public IReadOnlySet<string> FindImportedFingerprints(IReadOnlyList<string> fingerprints)
+    {
+        if (fingerprints.Count == 0) return new HashSet<string>(StringComparer.Ordinal);
+        using var connection = factory.CreateOpenConnection();
+        return connection.Query<string>(
+            "SELECT import_fingerprint FROM transactions WHERE deleted_at IS NULL AND import_fingerprint IN @fingerprints",
+            new { fingerprints }).ToHashSet(StringComparer.Ordinal);
+    }
+
     public IReadOnlyList<CardInvoicePayment> ListInvoicePayments(long cardId)
     {
         using var connection = factory.CreateOpenConnection();

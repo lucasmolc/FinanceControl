@@ -69,5 +69,7 @@ export function LoginPage({ onSignedIn }: { onSignedIn: (user: SessionUser) => v
         <Button variant="link" onClick={switchMode}>{registering ? "Entrar" : "Criar conta"}</Button>
       </p>
     </section>
+    {/* Versão do sistema: discreta, abaixo do cartão, para identificar o que está instalado. */}
+    <p className="auth-version">Versão {__APP_VERSION__}</p>
   </main>;
 }

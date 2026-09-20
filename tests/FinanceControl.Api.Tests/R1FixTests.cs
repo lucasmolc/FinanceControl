@@ -83,7 +83,7 @@ public sealed class R1FixTests
             await using var connection = factory.CreateOpenConnection();
             Assert.Equal(1L, await connection.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM pragma_table_info('bills') WHERE name='active_since' AND type='TEXT' AND \"notnull\"=0 AND dflt_value IS NULL"));
             Assert.Equal(1L, await connection.ExecuteScalarAsync<long>("SELECT COUNT(*) FROM bills WHERE name='Antiga' AND amount_cents=1000 AND active_since IS NULL"));
-            Assert.Equal("009_bill_active_since", await connection.ExecuteScalarAsync<string>("SELECT MAX(id) FROM schema_migrations"));
+            Assert.Equal("010_imports_and_installments", await connection.ExecuteScalarAsync<string>("SELECT MAX(id) FROM schema_migrations"));
         }
         finally
         {

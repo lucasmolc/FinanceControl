@@ -6,13 +6,17 @@ import { brandById, detectBrand } from "../../lib/brands";
 import { currencyOf } from "../../lib/currencies";
 import { optionsOf, paymentMethodLabels } from "../../lib/labels";
 import { formatRate, parseRate, toBaseCents } from "../../lib/money";
-import { BrandField, CategoryField, ChoiceField, CurrencyField, DateField, FormGrid, MoneyField, SelectField, TextAreaField, TextField } from "../records/fields";
+import { BrandField, CategoryField, ChoiceField, CurrencyField, DateField, FormGrid, MoneyField, NumberField, SelectField, TextAreaField, TextField } from "../records/fields";
 import { accountIcon, cardIcon } from "../records/optionIcons";
 import { ClosedMonthActions } from "../records/ClosedMonthActions";
 import { accountCurrency, accountOptions, checked, closedMonthMessage, idOrNull, inClosedMonth, KIND_OPTIONS, money, text, trimmed } from "../records/formUtils";
 import type { FieldsProps } from "../records/types";
 import { preselectedCard, transactionCurrency } from "./formModel";
 import { REMOVED_ACCOUNT_HINT } from "./transactionsModel";
+import {
+  AMOUNT_BASIS_OPTIONS, closedInstallmentMonths, installmentPlan, installmentSummary, MAX_INSTALLMENTS, MIN_INSTALLMENTS,
+  REPEAT_DESCRIPTIONS, REPEAT_OPTIONS, repeatMode,
+} from "./installments";
 
 /**
  * "Cotação usada" for non-BRL transactions (MEL-26): prefilled with the latest market rate until the user edits it,
@@ -40,6 +44,41 @@ function ExchangeRateField({ f, currency }: { f: FieldsProps; currency: string }
     ? `Em reais: ${format(base)}. R$ por 1 ${info.code}; em branco, usamos a cotação mais recente.`
     : loading ? "Buscando a cotação mais recente…" : `R$ por 1 ${info.code}; em branco, usamos a cotação mais recente.`;
   return <TextField f={{ ...f, set: (key, next) => { f.set(key, next); f.set("exchange_rate_touched", true); } }} name="exchange_rate" label="Cotação usada" placeholder="Ex.: 5,1234" hint={hint} />;
+}
+
+/**
+ * "Repetição" (v1.4): um lançamento só, uma compra parcelada (N lançamentos, um por mês, para trás e para frente) ou
+ * um gasto mensal sem prazo — que é uma assinatura, para poder mudar de valor e ser desativada depois.
+ */
+function RepetitionSection({ f, kind }: { f: FieldsProps; kind: string }) {
+  const format = useMoneyFormat();
+  const mode = repeatMode(f.form);
+  const currency = transactionCurrency(f.form);
+  const plan = installmentPlan(f.form, currencyOf(currency).decimals);
+  const date = trimmed(f.form, "date");
+  const closed = plan ? closedInstallmentMonths(plan, date, f.ctx.closedMonths) : [];
+  // Assinatura é sempre uma despesa; para receita ou aporte a opção não se aplica.
+  const disabled = kind === "expense" ? undefined : ["forever"];
+  return <>
+    <ChoiceField f={f} name="repeat" label="Repetição" options={REPEAT_OPTIONS} descriptions={REPEAT_DESCRIPTIONS}
+      variant="cards" columns={3} disabledOptions={disabled} />
+    {mode === "installments" && <div className="stack">
+      <FormGrid>
+        <NumberField f={f} name="installment_number" label="Parcela atual" min={1} max={MAX_INSTALLMENTS} required
+          hint="Em qual parcela a compra está hoje. As anteriores entram nos meses passados." />
+        <NumberField f={f} name="installment_count" label="Total de parcelas" min={MIN_INSTALLMENTS} max={MAX_INSTALLMENTS} required />
+      </FormGrid>
+      <ChoiceField f={f} name="amount_basis" label="O valor informado é" options={AMOUNT_BASIS_OPTIONS} />
+      {plan && closed.length === 0 && <p className="field-hint" role="status">{installmentSummary(plan, format)}</p>}
+      {closed.length > 0 && <p className="field-error" role="alert">
+        {closed.length === 1 ? `A parcela de ${closed[0]} cai em um mês fechado.` : `Parcelas caem em meses fechados (${closed.join(", ")}).`} Reabra para lançar a compra inteira.
+      </p>}
+    </div>}
+    {mode === "forever" && <p className="field-hint">
+      Vira uma <b>assinatura</b>: a cobrança se repete todo mês, aparece nas próximas faturas e segue até você desativar em
+      Assinaturas. Alterar o valor lá vale só para as cobranças seguintes. A cobrança desta data já é lançada agora.
+    </p>}
+  </>;
 }
 
 /** Keys that live in "Mais detalhes" (CR-15): the section opens by itself when one of them has a value or an error. */
@@ -88,6 +127,8 @@ export function TransactionFields(f: FieldsProps) {
     const categoryId = idOrNull(f.form, "category_id");
     const category = f.ctx.state.categories.find(item => item.id === categoryId);
     if (categoryId !== null && category?.kind !== next) f.set("category_id", "");
+    // Assinatura só existe para despesa: trocar o tipo desfaz a escolha "todo mês, sem prazo".
+    if (next !== "expense" && repeatMode(f.form) === "forever") f.set("repeat", "none");
   };
   const changeMethod = (next: string) => {
     f.set("payment_method", next);
@@ -130,6 +171,7 @@ export function TransactionFields(f: FieldsProps) {
       <SelectField f={f} name="payment_method" label="Forma de pagamento" options={optionsOf(paymentMethodLabels)} onChange={changeMethod} />
       {cardMode ? cardField : accountField}
     </FormGrid>
+    {f.ctx.mode === "create" && <RepetitionSection f={f} kind={kind} />}
     <details className="form-more" open={open} onToggle={event => setDetailsOpen(event.currentTarget.open)}>
       <summary>
         <span className="form-more-title">Mais detalhes</span>

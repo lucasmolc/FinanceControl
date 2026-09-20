@@ -88,6 +88,7 @@ public static partial class InputValidator
             ? logo.Trim().Length == 0 ? (null, null) : logo.Trim().Length <= MaxLogoLength && LogoPattern().IsMatch(logo.Trim()) ? (logo.Trim(), null) : (null, Messages.LogoData)
             : (null, Messages.LogoData),
         FieldType.Decimal => NormalizeDecimal(input),
+        FieldType.Digits => NormalizePattern(input, value => value.Length == field.MaxLength && value.All(char.IsAsciiDigit), field.RangeMessage ?? Messages.InvalidValue),
         _ => (null, Messages.InvalidValue)
     };
 

@@ -26,6 +26,15 @@ const type = (label: string, value: string) => fireEvent.change(screen.getByLabe
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("AuthGate", () => {
+  /** A versão exibida no login vem do package.json, injetada pelo `define` do Vite. */
+  it("mostra a versão do sistema na tela de login", async () => {
+    serve(() => unauthorized);
+    render(<AuthGate><Protected /></AuthGate>);
+    await screen.findByRole("heading", { name: "Entrar" });
+    expect(screen.getByText(`Versão ${__APP_VERSION__}`)).toBeTruthy();
+    expect(__APP_VERSION__).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
   it("mostra o login sem sessão e libera o app depois de entrar", async () => {
     const fetchMock = serve((url, init) => {
       if (url === "/api/auth/me") return unauthorized;

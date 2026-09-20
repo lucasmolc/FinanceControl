@@ -55,7 +55,7 @@ public sealed class MigrationTests : IDisposable
         verify.CommandText = "SELECT COUNT(*) FROM categories WHERE id=1 AND name='Alimentação'";
         Assert.Equal(1L, (long)(await verify.ExecuteScalarAsync())!);
         verify.CommandText = "SELECT COUNT(*) FROM schema_migrations";
-        Assert.Equal(9L, (long)(await verify.ExecuteScalarAsync())!);
+        Assert.Equal(10L, (long)(await verify.ExecuteScalarAsync())!);
     }
 
     [Fact]
@@ -175,7 +175,7 @@ public sealed class MigrationTests : IDisposable
         verify.CommandText = "SELECT COUNT(*) FROM subscription_charges";
         Assert.Equal(0L, (long)(await verify.ExecuteScalarAsync())!);
         verify.CommandText = "SELECT group_concat(id, ',') FROM (SELECT id FROM schema_migrations ORDER BY id)";
-        Assert.Equal("001_initial,002_transaction_soft_delete,003_remove_placeholder_data,004_links_and_movement_history,005_usability,006_closings_and_card_invoices,007_v12,008_plan,009_bill_active_since", (string)(await verify.ExecuteScalarAsync())!);
+        Assert.Equal("001_initial,002_transaction_soft_delete,003_remove_placeholder_data,004_links_and_movement_history,005_usability,006_closings_and_card_invoices,007_v12,008_plan,009_bill_active_since,010_imports_and_installments", (string)(await verify.ExecuteScalarAsync())!);
     }
 
     [Fact]
@@ -226,7 +226,7 @@ public sealed class MigrationTests : IDisposable
         Assert.Equal(2L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM transactions WHERE card_id IS NULL AND deleted_at IS NULL"));
         Assert.Equal(1L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM monthly_closings WHERE month='2026-07' AND notes='antigo' AND summary_json IS NULL"));
         Assert.Equal(0L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM card_invoice_payments"));
-        Assert.Equal(9L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM schema_migrations"));
+        Assert.Equal(10L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM schema_migrations"));
         Assert.Equal("ok", await ScalarAsync<string>(migrated, "PRAGMA integrity_check"));
     }
 
@@ -301,7 +301,7 @@ public sealed class MigrationTests : IDisposable
         Assert.Equal(1L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM bills WHERE auto_debit=0 AND auto_debit_since IS NULL AND account_id IS NULL AND currency='BRL'"));
         Assert.Equal(1L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM subscriptions WHERE auto_debit=0 AND currency='BRL'"));
         Assert.Equal(1L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM settings WHERE ui_preferences IS NULL AND market_auto_refresh=1"));
-        Assert.Equal(9L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM schema_migrations"));
+        Assert.Equal(10L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM schema_migrations"));
         Assert.Equal("ok", await ScalarAsync<string>(migrated, "PRAGMA integrity_check"));
         Assert.Equal(0L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM pragma_foreign_key_check"));
     }
@@ -349,7 +349,7 @@ public sealed class MigrationTests : IDisposable
         Assert.Equal("goals", await ScalarAsync<string>(connection, "SELECT \"table\" FROM pragma_foreign_key_list('settings') WHERE \"from\"='freedom_goal_id'"));
         Assert.Equal(1L, await ScalarAsync<long>(connection, "SELECT COUNT(*) FROM pragma_table_info('categories') WHERE name='bucket' AND \"notnull\"=0 AND dflt_value IS NULL"));
         Assert.Equal(1L, await ScalarAsync<long>(connection, "SELECT COUNT(*) FROM settings WHERE plan_fixed_pct IS NULL AND freedom_multiplier=150 AND freedom_goal_id IS NULL AND freedom_goal_auto=1"));
-        Assert.Equal("009_bill_active_since", await ScalarAsync<string>(connection, "SELECT MAX(id) FROM schema_migrations"));
+        Assert.Equal("010_imports_and_installments", await ScalarAsync<string>(connection, "SELECT MAX(id) FROM schema_migrations"));
 
         var valid = connection.CreateCommand();
         valid.CommandText = "INSERT INTO categories(name,kind,bucket) VALUES ('A','expense','fixo'),('B','expense','lazer'),('C','investment','investimento'),('D','expense','fora'),('E','expense',NULL)";
@@ -382,7 +382,7 @@ public sealed class MigrationTests : IDisposable
         await new DatabaseMigrator(factory).MigrateAsync();
 
         await using var migrated = factory.CreateOpenConnection();
-        Assert.Equal(9L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM schema_migrations"));
+        Assert.Equal(10L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM schema_migrations"));
         Assert.Equal(1L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM settings WHERE plan_fixed_pct IS NULL AND plan_fun_pct IS NULL AND plan_invest_pct IS NULL AND freedom_multiplier=150 AND freedom_goal_id IS NULL AND freedom_goal_auto=1 AND emergency_goal_id=2 AND monthly_spending_limit_cents=900000"));
         Assert.Equal(2L, await ScalarAsync<long>(migrated, "SELECT COUNT(*) FROM categories WHERE bucket IS NULL"));
         Assert.Equal(100L, await ScalarAsync<long>(migrated, "SELECT target_cents FROM goals WHERE id=1"));

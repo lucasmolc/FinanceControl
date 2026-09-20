@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronRight, Eye, Undo2, Wallet } from "lucide-react";
+import { CalendarClock, ChevronRight, Eye, Undo2, Wallet } from "lucide-react";
 import { api, errorMessage, isConnectivityError } from "../../api/client";
 import { Badge, Money, Skeleton } from "../../components/ui";
 import { useConfirm } from "../../components/useConfirm";
@@ -105,6 +105,12 @@ export function CardInvoices({ card, version, openModal, notify, refresh, list, 
         <div className="invoice-block-text">
           <p className="invoice-block-title"><b>{invoiceTitle(invoice.month)}</b> <Badge tone={invoicePhaseTone(phase)}>{invoicePhaseLabel(phase)}</Badge></p>
           <p className="muted">{invoiceDetail(invoice, phase)}</p>
+          {/* v1.4: assinaturas ativas do cartão ainda não lançadas neste ciclo — previsão, fora do total realizado. */}
+          {(invoice.projected_count ?? 0) > 0 && <p className="muted invoice-projected">
+            <CalendarClock size={14} aria-hidden="true" />
+            {invoice.projected_count === 1 ? "1 cobrança de assinatura prevista" : `${invoice.projected_count} cobranças de assinaturas previstas`}:{" "}
+            <Money cents={invoice.projected_cents ?? 0} />
+          </p>}
         </div>
         <div className="value compact-value"><Money cents={invoice.total_cents} /></div>
       </div>

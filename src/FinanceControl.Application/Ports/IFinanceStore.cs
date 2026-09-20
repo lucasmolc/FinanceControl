@@ -18,9 +18,14 @@ public interface IFinanceStore
     IReadOnlyList<string> FindMissingReferences(IReadOnlyList<ReferenceCheck> references);
 
     OperationResult<long> CreateRecord(string module, IReadOnlyDictionary<string, object?> values);
+    /// <summary>Cria vários lançamentos de uma vez (parcelas de uma compra, linhas de uma fatura importada) em uma
+    /// única transação de banco; devolve os ids na mesma ordem das linhas.</summary>
+    OperationResult<IReadOnlyList<long>> CreateTransactions(IReadOnlyList<IReadOnlyDictionary<string, object?>> rows);
     OperationResult<bool> UpdateRecord(string module, long id, IReadOnlyDictionary<string, object?> values);
     OperationResult<bool> RemoveRecord(string module, long id);
     OperationResult<bool> RestoreRecord(string module, long id);
+    /// <summary>Lança no saldo das contas os lançamentos futuros cuja data chegou; devolve quantos foram aplicados.</summary>
+    int ApplyDueTransactionBalances();
 
     MonthlySummary GetMonthlySummary(string month);
     IReadOnlyList<BillChecklistItem> GetChecklist(string month);
@@ -62,6 +67,10 @@ public interface IFinanceStore
 
     /// <summary>Lançamentos não removidos do cartão com data no intervalo (limites inclusivos; início null = desde sempre), data asc, id asc.</summary>
     IReadOnlyList<Transaction> ListCardTransactions(long cardId, string? fromDate, string toDate);
+    /// <summary>Lançamentos não removidos de um cartão ou de uma conta no intervalo de datas (inclusivo), para achar repetidos ao importar.</summary>
+    IReadOnlyList<Transaction> ListTransactionsOf(long? cardId, long? accountId, string fromDate, string toDate);
+    /// <summary>Das marcas de origem informadas, as que já existem em lançamentos não removidos (arquivo já importado).</summary>
+    IReadOnlySet<string> FindImportedFingerprints(IReadOnlyList<string> fingerprints);
     IReadOnlyList<CardInvoicePayment> ListInvoicePayments(long cardId);
     OperationResult<long> PayCardInvoice(CardInvoicePaymentCommand command);
     OperationResult<bool> UnpayCardInvoice(long cardId, string month);
@@ -130,5 +139,8 @@ public interface IFinanceStore
     BackupDocument CreateBackup();
     byte[] CreateDatabaseSnapshot();
     OperationResult<RestoreResult> RestoreBackup(RestorePlan plan);
+    /// <summary>Apaga todos os dados financeiros e recria o estado de conta nova (setup por fazer e categorias padrão),
+    /// depois de gravar uma cópia automática do banco; devolve o caminho dessa cópia.</summary>
+    string ResetAccountData(string safetyCopyFileName);
     AboutInfo GetAbout();
 }

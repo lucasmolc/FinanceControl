@@ -89,7 +89,23 @@ public class CardInvoice
     public long ItemsCount { get; init; }
     public string Status { get; init; } = "";
     public InvoicePaymentInfo? Paid { get; init; }
+    /// <summary>Cobranças de assinatura esperadas neste ciclo e ainda não lançadas (v1.4); zero em faturas já fechadas.
+    /// Fica fora de <see cref="TotalCents"/>: previsão não é gasto realizado.</summary>
+    public long ProjectedCents { get; init; }
+    public int ProjectedCount { get; init; }
 }
+
+/// <summary>Cobrança de assinatura esperada em uma fatura que ainda não fechou (v1.4).</summary>
+public sealed record ProjectedInvoiceItem(
+    long SubscriptionId,
+    string Name,
+    string Date,
+    long AmountCents,
+    string Currency,
+    long BaseAmountCents,
+    string? Brand,
+    long? CategoryId,
+    string? CategoryName);
 
 /// <summary>Fatura com os dados do cartão, para a lista de contas a pagar (R1-BILLS-2).</summary>
 public sealed class CardInvoiceRow : CardInvoice
@@ -104,6 +120,8 @@ public sealed class CardInvoiceRow : CardInvoice
 public sealed class CardInvoiceDetail : CardInvoice
 {
     public IReadOnlyList<Transaction> Items { get; init; } = [];
+    /// <summary>Cobranças previstas do ciclo, listadas à parte dos lançamentos já feitos (v1.4).</summary>
+    public IReadOnlyList<ProjectedInvoiceItem> Projected { get; init; } = [];
 }
 
 public sealed record AboutInfo(string DatabasePath, string SchemaVersion);

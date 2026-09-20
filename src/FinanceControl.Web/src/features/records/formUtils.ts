@@ -70,6 +70,14 @@ export const dayValue = (form: FormState, key: string): number | null => {
   return day >= 1 && day <= 31 ? day : null;
 };
 
+/** Inteiro positivo digitado (número de parcelas); null quando vazio ou fora do formato. */
+export const intOrNull = (form: FormState, key: string): number | null => {
+  const value = trimmed(form, key);
+  if (!/^\d{1,3}$/.test(value)) return null;
+  const parsed = Number(value);
+  return parsed >= 1 ? parsed : null;
+};
+
 export const checked = (form: FormState, key: string): boolean => form[key] === true || form[key] === "true";
 
 /** Money value for a select/text default: numbers are cents, strings are kept. */

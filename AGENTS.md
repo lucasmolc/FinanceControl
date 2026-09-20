@@ -68,6 +68,16 @@ Gerenciador financeiro pessoal, local-first, com armazenamento SQLite. Multiusu�
 - Críticas de design ficam em `.impeccable/critique/` na raiz; o sidecar do design system fica em `src/FinanceControl.Web/.impeccable/` (`design.json` e `config.json`, lidos pela skill ao lado do `DESIGN.md`).
 - Configurações de IDE (`.idea/`) e artefatos gerados (`dist`, `bin/obj`, `.vitest`, WAL/SHM, backups) não são versionados.
 
+## Documentação
+
+- A documentação é parte da entrega, não um apêndice: ela deve estar sempre completa e igual ao comportamento real.
+- `docs/FLUXOS.md` descreve todos os fluxos do sistema em detalhe. **Toda mudança de comportamento atualiza esse
+  arquivo junto com o código**, inclusive quando o fluxo apenas muda de regra.
+- `docs/API.md` (contrato HTTP), `docs/MIGRATIONS.md` (uma seção por migração), `docs/ARCHITECTURE.md` (camadas e
+  invariantes) e o README (funcionalidades, rotas e números de teste) acompanham a mesma regra.
+- A ajuda das telas (`src/FinanceControl.Web/src/features/help/pageHelp.ts`) também é documentação: quando uma regra
+  muda, o texto que explica a função para o usuário muda junto.
+
 ## Qualidade
 
 - Execute `npm run check` após alterações relevantes.

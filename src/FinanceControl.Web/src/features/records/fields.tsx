@@ -75,6 +75,13 @@ export function DayField({ f, name, label, hint, required = true, optional }: Ba
   </Field>;
 }
 
+/** Integer within a range (e.g. number of installments): keeps the typed text. */
+export function NumberField({ f, name, label, hint, min = 1, max = 999, required = false, optional }: BaseProps & { min?: number; max?: number; required?: boolean }) {
+  return <Field label={label} hint={hint} error={f.errors[name]} optional={optional ?? !required}>
+    <input name={name} type="number" inputMode="numeric" min={min} max={max} step={1} required={required} value={value(f, name)} onChange={event => f.set(name, event.target.value)} />
+  </Field>;
+}
+
 /** pt-BR date field (DatePicker, MEL-42): types "dd/mm/aaaa" or picks in the calendar; the form keeps ISO. */
 export function DateField({ f, name, label, hint, required = false, optional, min, max }: BaseProps & { required?: boolean; min?: string; max?: string }) {
   return <Field label={label} hint={hint} error={f.errors[name]} optional={optional ?? !required}>

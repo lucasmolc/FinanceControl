@@ -28,7 +28,7 @@ public sealed class HostingTests(FinanceApiFactory factory) : IClassFixture<Fina
     {
         var about = await _client.GetJsonAsync("/api/about");
         Assert.Equal(Path.GetFullPath(factory.DatabasePath), about.GetProperty("database_path").GetString());
-        Assert.Equal("009_bill_active_since", about.GetProperty("schema_version").GetString());
+        Assert.Equal("010_imports_and_installments", about.GetProperty("schema_version").GetString());
     }
 
     [Fact]

@@ -16,6 +16,8 @@ public sealed partial class FinanceService
         try
         {
             var created = new List<AutoDebitItem>();
+            // Lançamentos futuros (parcelas à frente) entram no saldo da conta no dia em que vencem.
+            store.ApplyDueTransactionBalances();
             var rates = LatestRates();
             created.AddRange(RunBillAutoDebits(rates));
             created.AddRange(RunSubscriptionAutoDebits(rates));

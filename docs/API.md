@@ -2,6 +2,8 @@
 
 JSON em `snake_case`, dinheiro em unidades mínimas (`int64`) da moeda do registro (centavos para BRL; ver [Moedas](#moedas-v12)), datas `YYYY-MM-DD`, competências `YYYY-MM`. O servidor apara (`trim`) todos os textos.
 
+Os fluxos completos (o que acontece de ponta a ponta em cada função) estão em [FLUXOS.md](FLUXOS.md).
+
 ## Sessão e segurança
 
 Todas as rotas exigem sessão, exceto `GET /api/health` e as de conta abaixo. Cada usuário tem o próprio banco: todas as demais rotas leem e alteram **somente os dados do usuário da sessão**, e ids de registros de outro usuário respondem 404.
@@ -57,7 +59,7 @@ Mensagens comuns: `Campo obrigatório.`, `Campo não permitido.` (campo desconhe
   `closed` (bool) e `closed_at` (texto ISO ou `null`) indicam se o mês está fechado.
   `income_categories` e `investment_categories` têm o mesmo formato de `categories`, com `spent_cents` = valor realizado (recebido/aplicado) no mês, e seguem as mesmas regras para categorias de receita e de investimento. `uncategorized_income_cents` e `uncategorized_investment_cents` somam receitas/investimentos sem categoria do respectivo tipo.
 - `GET /api/checklist?month=YYYY-MM` (padrão: mês local atual) → contas ativas com `category_name`, `paid`, `paid_at`, `transaction_id`.
-- `GET /api/about` → `{ "database_path": "<caminho absoluto>", "schema_version": "009_bill_active_since" }`.
+- `GET /api/about` → `{ "database_path": "<caminho absoluto>", "schema_version": "010_imports_and_installments" }`.
 
 ## CRUD por módulo
 
@@ -330,3 +332,93 @@ Pague com `POST /api/cards/{card_id}/invoices/{month}/pay`.
 - `GET /api/state` → `settings.freedom_progress_cents`: patrimônio investido = soma de `current_cents` dos investimentos ativos em BRL pela última cotação (moedas sem cotação ficam fora, como no patrimônio; igual a `starting.investments_cents` das projeções).
 - A meta vinculada ao número da liberdade (`freedom_goal_status = "linked"`) é devolvida com `current_cents = freedom_progress_cents` em `GET /api/state` (`goals[]`), `GET /api/goals` e `GET /api/projections/base` (`goals[].current_cents` e `base_current_cents`), com ou sem plano e cálculo automático. `GET /api/projections/base` ganha `freedom_progress_cents`.
 - Movimentações manuais na meta (`POST /api/goals/{id}/entries`) continuam aceitas e gravadas, mas não mudam o valor exibido enquanto ela estiver vinculada (a interface mostra "Patrimônio investido" e não oferece aporte). O valor gravado em `goals.current_cents` e no backup não é alterado.
+
+## v1.4 — importação de fatura, parcelamento e saldo por data
+
+Migração `010_imports_and_installments` (aditiva): `cards.last_digits`; `transactions.import_fingerprint`,
+`installment_group`, `installment_number`, `installment_count` e `balance_applied`. A única linha alterada é
+`balance_applied`, preenchida para que os saldos das contas continuem idênticos aos de antes da migração.
+
+### Três datas de um gasto no cartão
+
+Um gasto tem competência (quando aconteceu), fatura (em qual cobrança entra) e caixa (quando o dinheiro sai). A API
+mantém as três separadas e **não desloca a data da compra**: `transactions.date` é sempre a data do gasto, e é ela que
+alimenta `GET /api/summary`, relatórios e orçamentos. A fatura é derivada pelo ciclo do cartão. Uma compra de 06/09 com
+fechamento dia 3 é gasto de setembro e cai na fatura de outubro.
+
+### Campos novos
+
+- `transactions` (em `GET /api/state`, `GET /api/transactions` e `GET /api/cards/{id}/invoices/{month}`):
+  `installment_number`, `installment_count` (inteiros ou `null`), `installment_group` (texto ou `null`) e
+  `imported` (bool: veio de uma importação).
+- `cards`: `last_digits` (4 dígitos ou `null`) em leitura, `POST` e `PUT`. Formato inválido → 400 `last_digits`.
+- `GET /api/cards/{id}/invoices` e `/invoices/{month}`: `projected_cents` e `projected_count` — cobranças de
+  assinaturas ativas do cartão esperadas no ciclo e ainda não lançadas. Ficam **fora** de `total_cents` (previsão não é
+  gasto realizado) e são zero em faturas já fechadas. O detalhe traz `projected: [{ subscription_id, name, date,
+  amount_cents, currency, base_amount_cents, brand, category_id, category_name }]`.
+
+### Compra parcelada
+
+`POST /api/transactions` aceita, só na criação:
+
+- `installment_count` (2 a 72) — obrigatório para parcelar; sem ele, `installment_number` e `installment_total_cents`
+  são recusados (400 `installment_count`).
+- `installment_number` (1 a `installment_count`, padrão 1) — em qual parcela a compra está hoje.
+- `installment_total_cents` (opcional) — valor total da compra. Sem ele, o total é `amount_cents × installment_count`.
+
+A resposta é `{ ok, id }` com o id da parcela informada. São gravadas as `installment_count` parcelas em uma única
+transação de banco, uma por mês, para trás e para frente a partir da data enviada (mesmo dia do mês, limitado ao
+tamanho do mês). A descrição de cada uma recebe o sufixo `(k/N)`. Ao dividir o total, o resto vai um centavo por
+parcela a partir da primeira, e a soma fecha exatamente o total. Regras:
+
+- Vale para qualquer forma de pagamento. No cartão cada parcela cai na fatura do seu mês; em conta, as parcelas
+  futuras só entram no saldo quando a data chega.
+- Qualquer mês da série fechado → 400 `date` listando os meses.
+- `installment_total_cents` menor que `installment_count` (menos de um centavo por parcela) → 400.
+- Em `PUT /api/transactions/{id}` os três campos são recusados (400): parcelamento só na criação.
+
+Para gasto mensal **sem prazo** (academia, streaming) o caminho continua sendo a assinatura, que já repete
+indefinidamente, aceita mudança de valor valendo das próximas cobranças em diante e termina ao ser desativada.
+
+### Saldo da conta por data
+
+`bank_accounts.current_balance_cents` passa a contar apenas lançamentos com `date` até hoje. Um lançamento futuro fica
+pendente e entra no saldo no dia, pela rotina de `POST /api/auto-debits/run` (que também roda em segundo plano).
+Remover, restaurar e editar respeitam a mesma regra. Bancos anteriores à 010 mantêm o saldo gravado.
+
+### Importar fatura ou extrato
+
+Dois passos, sem estado no servidor: a conferência não grava nada e a confirmação refaz a mesma leitura.
+
+- `POST /api/imports/preview` e `POST /api/imports/commit`, corpo:
+  `{ card_id | account_id, file_name?, content_base64, positive_is_expense?, category_id?, fingerprints? }`.
+  Exatamente um destino (400 `card_id` sem nenhum ou com os dois). Arquivo até 5 MB, em base64 (aceita data URL).
+- Formatos reconhecidos pelo conteúdo: **CSV/TXT** (separador `;`, tab, `,` ou `|` detectado; colunas de data,
+  descrição, valor, cartão e parcela reconhecidas por apelidos), **OFX** (SGML e XML) e **QIF**. Texto em UTF-8 ou
+  ISO-8859-1. Sem colunas reconhecíveis → 400 `file`.
+- Sinal: em fatura de cartão o valor positivo é despesa; em extrato, receita. `positive_is_expense` inverte.
+  OFX e QIF seguem sempre o padrão (saída negativa).
+- Resposta da conferência: `{ format, target_kind, target_id, target_name, currency, positive_is_expense, lines, totals }`.
+  Cada linha: `{ fingerprint, date, description, kind, amount_cents, currency, card_id, card_name, account_id,
+  invoice_month, installment_number, installment_count, purchase_date, notes, status, duplicate_of, duplicate_date }`.
+- `status`: `novo` · `duplicado` (já existe lançamento de mesmo valor e tipo no destino, até 4 dias de distância —
+  é o caso da assinatura já lançada que reaparece na fatura; `duplicate_of`/`duplicate_date` dizem qual) ·
+  `importado` (mesma linha já importada antes) · `pagamento` (pagamento da fatura anterior, registrado pela tela de
+  faturas) · `mes_fechado`. `importado` e `mes_fechado` não podem ser gravados.
+- `POST /api/imports/commit` sem `fingerprints` grava apenas as linhas `novo`; com `fingerprints`, grava as escolhidas
+  entre `novo`, `duplicado` e `pagamento`. Nada selecionável → 400 `fingerprints`. Resposta `{ created, skipped, ids }`.
+- **Datas das parcelas.** Alguns bancos repetem a data da compra original em toda parcela (`04/07/2026 … 3 de 3` na
+  fatura de outubro). A importação deduz o ciclo que o arquivo representa pelas compras à vista e, quando a data da
+  linha está fora dele, desloca o gasto para o mês da parcela cobrada (`04/09/2026`), guardando a compra original em
+  `purchase_date` e nas observações. Arquivos que já datam cada parcela na cobrança ficam como estão.
+- **Qual cartão.** A coluna de cartão casa com `last_digits` dos cartões ativos; sem dígitos, com o nome do cartão
+  (portador); sem casar, fica o cartão escolhido, para ajustar na tela de lançamentos.
+- Reimportar o mesmo arquivo não duplica: cada linha carrega uma marca de origem (`import_fingerprint`), o `FITID`
+  no OFX e data + descrição + valor + repetição nos demais formatos.
+
+### Zerar a conta
+
+`POST /api/reset` com `{ "confirmation": "APAGAR TUDO" }` (texto exato; qualquer outro → 400 `confirmation`) apaga
+todos os dados financeiros do usuário e devolve o banco ao estado de conta nova: `setup_completed` e `tour_completed`
+em 0, categorias padrão recriadas e ids recomeçando do 1. O login e a senha continuam. Antes de apagar, uma cópia do
+banco é gravada em `backups/antes-de-zerar-<data>.db`; a resposta é `{ ok, safety_copy }`.

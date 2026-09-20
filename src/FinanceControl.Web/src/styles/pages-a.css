@@ -193,9 +193,54 @@ rect.chart-highlight { stroke: none; pointer-events: none; }
 .description-cell > span:last-child, .account-cell > span:last-child { min-width: 0; }
 .amount-stack { display: inline-grid; justify-items: end; gap: 1px; }
 .amount-stack small { font-size: var(--text-xs); font-feature-settings: var(--numeric); }
+/* v1.4: parcela da compra ("6/10") ao lado da descrição. */
+.installment-chip { flex: none; margin-left: var(--space-2); padding: 1px 6px; border-radius: var(--radius-pill); background: var(--panel-3); color: var(--text-soft); font-size: var(--text-xs); font-weight: 650; font-feature-settings: var(--numeric); }
 @media (max-width: 620px) {
   .transactions-toolbar .transactions-search, .transactions-toolbar .transactions-category { flex: 1 1 100%; max-width: none; }
   .amount-stack { justify-items: start; }
+}
+
+/* v1.4: ajuda da tela — botão discreto no topo e o painel com os assuntos. */
+.help-trigger { color: var(--muted); }
+.help-trigger:hover, .help-trigger:focus-visible { color: var(--text); }
+.help-topics { display: grid; gap: var(--space-4); margin: 0; }
+.help-topic { display: grid; gap: var(--space-1); }
+.help-topic dt { color: var(--text); font-weight: 650; }
+.help-topic dd { margin: 0; line-height: 1.55; }
+.help-watch { display: grid; gap: var(--space-2); padding: var(--space-3); border-radius: var(--radius-md); background: var(--panel-3); }
+.help-watch-title { display: flex; align-items: center; gap: var(--space-2); margin: 0; color: var(--text); font-weight: 650; }
+.help-watch .list { margin: 0; color: var(--text-soft); }
+
+/* v1.4: metas do planejamento removidas, com a opção de recriar. */
+.auto-goals-notice h2 { display: flex; align-items: center; gap: var(--space-2); }
+.auto-goals-list { display: grid; gap: var(--space-3); }
+.auto-goal-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2) var(--space-3); }
+.auto-goal-text { display: grid; gap: 2px; min-width: 0; }
+.auto-goal-text small { font-size: var(--text-sm); }
+
+/* v1.4: zerar a conta — aviso e inventário do que será apagado. */
+.reset-warning { display: flex; align-items: flex-start; gap: var(--space-2); }
+.reset-warning svg { flex: none; margin-top: 2px; color: var(--danger); }
+.reset-inventory { list-style: disc; padding-left: var(--space-5); }
+.reset-inventory li { margin: 0; }
+
+/* v1.4: cobranças previstas na fatura (assinaturas ativas ainda não lançadas). */
+.invoice-projected { display: flex; align-items: center; gap: var(--space-1); }
+.invoice-projected-list > p { display: flex; align-items: center; gap: var(--space-1); }
+
+/* ---------- Importar fatura ou extrato (v1.4) ---------- */
+.import-dialog .import-table { max-height: 46vh; overflow: auto; }
+.import-dialog .import-table table { font-size: var(--text-sm); }
+.import-dialog .import-table thead th { position: sticky; top: 0; z-index: 1; background: var(--panel-2); }
+.import-dialog .import-check { width: 2.5rem; }
+.import-dialog .import-date { white-space: nowrap; }
+.import-dialog .import-date small, .import-dialog .import-target small, .import-dialog .import-description small { display: block; font-size: var(--text-xs); }
+.import-dialog .import-amount { text-align: right; white-space: nowrap; font-feature-settings: var(--numeric); }
+.import-dialog tr.is-disabled { opacity: 0.6; }
+.import-empty { display: flex; align-items: center; gap: var(--space-2); }
+@media (max-width: 620px) {
+  .import-dialog .import-table { max-height: 50vh; }
+  .import-dialog .import-target, .import-dialog .import-date small { display: none; }
 }
 
 /* ---------- Configurações ---------- */

@@ -287,7 +287,7 @@ describe("CR-16 · lançamentos por dia e em lote", () => {
     const dialog = screen.getByRole("dialog", { name: "Categorizar 3 lançamentos" });
     pick(dialog, "Categoria", "Alimentação");
     expect(within(dialog).getByRole("status").textContent).toBe("2 lançamentos mudam para Alimentação; 1 lançamento de outro tipo fica como está.");
-    fireEvent.click(within(dialog).getByRole("button", { name: "Categorizar" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Aplicar" }));
     await waitFor(() => expect(api.update).toHaveBeenCalledTimes(2));
     expect(api.update).toHaveBeenCalledWith("transactions", 1, { category_id: 3 });
     expect(api.update).toHaveBeenCalledWith("transactions", 2, { category_id: 3 });

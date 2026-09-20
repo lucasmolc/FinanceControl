@@ -11,8 +11,13 @@ using Microsoft.Data.Sqlite;
 namespace FinanceControl.Infrastructure.Persistence;
 
 /// <summary>Adaptador SQLite: mapeamento de tabelas, verificação de chaves estrangeiras e persistência atômica.</summary>
-public sealed partial class SqliteFinanceStore(SqliteConnectionFactory factory) : IFinanceStore
+public sealed partial class SqliteFinanceStore(SqliteConnectionFactory factory, TimeProvider timeProvider) : IFinanceStore
 {
+    /// <summary>Colunas usadas para aplicar ou desfazer o efeito de um lançamento no saldo da conta.</summary>
+    private const string EffectColumns = "SELECT kind,amount_cents,account_id,date,balance_applied FROM transactions WHERE id=@id";
+
+    private string TodayIso => timeProvider.GetLocalNow().ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
     public FinanceState GetState()
     {
         using var connection = factory.CreateOpenConnection();
@@ -75,13 +80,26 @@ public sealed partial class SqliteFinanceStore(SqliteConnectionFactory factory) 
         using var connection = factory.CreateOpenConnection();
         using var transaction = connection.BeginTransaction();
         var id = InsertRow(connection, transaction, definition.Table, columns);
-        if (definition.IsTransaction)
-        {
-            var row = connection.QuerySingle<TransactionEffectRow>("SELECT kind,amount_cents,account_id FROM transactions WHERE id=@id", new { id }, transaction);
-            ApplyTransactionEffect(connection, transaction, row, 1);
-        }
+        if (definition.IsTransaction) ApplyDueTransaction(connection, transaction, id);
         transaction.Commit();
         return OperationResult<long>.Success(id);
+    }
+
+    public OperationResult<IReadOnlyList<long>> CreateTransactions(IReadOnlyList<IReadOnlyDictionary<string, object?>> rows)
+    {
+        var definition = RecordModuleCatalog.Get("transactions");
+        var columns = rows.Select(values => Writable(definition, values)).ToList();
+        using var connection = factory.CreateOpenConnection();
+        using var transaction = connection.BeginTransaction();
+        var ids = new List<long>(rows.Count);
+        foreach (var values in columns)
+        {
+            var id = InsertRow(connection, transaction, definition.Table, values);
+            ApplyDueTransaction(connection, transaction, id);
+            ids.Add(id);
+        }
+        transaction.Commit();
+        return OperationResult<IReadOnlyList<long>>.Success(ids);
     }
 
     public OperationResult<bool> UpdateRecord(string module, long id, IReadOnlyDictionary<string, object?> values)
@@ -94,7 +112,7 @@ public sealed partial class SqliteFinanceStore(SqliteConnectionFactory factory) 
         TransactionEffectRow? before = null;
         if (definition.IsTransaction)
         {
-            before = connection.QuerySingleOrDefault<TransactionEffectRow>($"SELECT kind,amount_cents,account_id FROM transactions WHERE id=@id AND {liveFilter}", new { id }, transaction);
+            before = connection.QuerySingleOrDefault<TransactionEffectRow>($"{EffectColumns} AND {liveFilter}", new { id }, transaction);
             if (before is null) return OperationResult<bool>.NotFound();
         }
 
@@ -107,9 +125,9 @@ public sealed partial class SqliteFinanceStore(SqliteConnectionFactory factory) 
 
         if (before is not null)
         {
-            var after = connection.QuerySingle<TransactionEffectRow>("SELECT kind,amount_cents,account_id FROM transactions WHERE id=@id", new { id }, transaction);
-            ApplyTransactionEffect(connection, transaction, before, -1);
-            ApplyTransactionEffect(connection, transaction, after, 1);
+            // Desfaz o efeito antigo (valores de antes da alteração) e aplica o novo quando a data já chegou.
+            RevertAppliedTransaction(connection, transaction, before, id);
+            ApplyDueTransaction(connection, transaction, id);
         }
         transaction.Commit();
         return OperationResult<bool>.Success(true);
@@ -135,10 +153,10 @@ public sealed partial class SqliteFinanceStore(SqliteConnectionFactory factory) 
         using var transaction = connection.BeginTransaction();
         if (definition.IsTransaction)
         {
-            var row = connection.QuerySingleOrDefault<TransactionEffectRow>("SELECT kind,amount_cents,account_id FROM transactions WHERE id=@id AND deleted_at IS NOT NULL", new { id }, transaction);
+            var row = connection.QuerySingleOrDefault<TransactionEffectRow>($"{EffectColumns} AND deleted_at IS NOT NULL", new { id }, transaction);
             if (row is null) return OperationResult<bool>.NotFound();
             connection.Execute("UPDATE transactions SET deleted_at=NULL WHERE id=@id", new { id }, transaction);
-            ApplyTransactionEffect(connection, transaction, row, 1);
+            ApplyDueTransaction(connection, transaction, id);
         }
         else if (connection.Execute($"UPDATE {definition.Table} SET active=1 WHERE id=@id AND active=0", new { id }, transaction) == 0)
         {
@@ -209,29 +227,56 @@ public sealed partial class SqliteFinanceStore(SqliteConnectionFactory factory) 
         return connection.QuerySingle<long>("SELECT last_insert_rowid()", transaction: transaction);
     }
 
-    private static long InsertTransaction(SqliteConnection connection, SqliteTransaction transaction, TransactionDraft draft)
+    private long InsertTransaction(SqliteConnection connection, SqliteTransaction transaction, TransactionDraft draft)
     {
         var id = connection.QuerySingle<long>(
             "INSERT INTO transactions(date,description,category_id,kind,amount_cents,payment_method,account_id,notes,card_id,currency,base_amount_cents,exchange_rate,brand) VALUES (@Date,@Description,@CategoryId,@Kind,@AmountCents,@PaymentMethod,@AccountId,@Notes,@CardId,@Currency,COALESCE(@BaseAmountCents,@AmountCents),@ExchangeRate,@Brand) RETURNING id",
             draft, transaction);
-        ApplyTransactionEffect(connection, transaction, new TransactionEffectRow { Kind = draft.Kind, AmountCents = draft.AmountCents, AccountId = draft.AccountId }, 1);
+        ApplyDueTransaction(connection, transaction, id);
         return id;
     }
 
-    private static bool SoftDeleteTransaction(SqliteConnection connection, SqliteTransaction transaction, long id)
+    private bool SoftDeleteTransaction(SqliteConnection connection, SqliteTransaction transaction, long id)
     {
-        var row = connection.QuerySingleOrDefault<TransactionEffectRow>("SELECT kind,amount_cents,account_id FROM transactions WHERE id=@id AND deleted_at IS NULL", new { id }, transaction);
+        var row = connection.QuerySingleOrDefault<TransactionEffectRow>($"{EffectColumns} AND deleted_at IS NULL", new { id }, transaction);
         if (row is null) return false;
+        RevertAppliedTransaction(connection, transaction, row, id);
         connection.Execute("UPDATE transactions SET deleted_at=CURRENT_TIMESTAMP WHERE id=@id", new { id }, transaction);
-        ApplyTransactionEffect(connection, transaction, row, -1);
         return true;
     }
 
-    private static void ApplyTransactionEffect(SqliteConnection connection, SqliteTransaction transaction, TransactionEffectRow row, int direction)
+    /// <summary>
+    /// Lança no saldo da conta o lançamento que ainda não entrou e cuja data já chegou. Lançamentos futuros (parcelas
+    /// à frente, por exemplo) ficam pendentes e entram no dia (<see cref="ApplyDueTransactionBalances"/>), de modo que o
+    /// saldo da conta reflete apenas o que já aconteceu.
+    /// </summary>
+    private void ApplyDueTransaction(SqliteConnection connection, SqliteTransaction transaction, long id)
     {
-        if (row.AccountId is not long accountId) return;
-        var delta = TransactionRules.BalanceDelta(row.Kind, row.AmountCents) * direction;
-        AdjustAccountBalance(connection, transaction, accountId, delta);
+        var row = connection.QuerySingleOrDefault<TransactionEffectRow>($"{EffectColumns} AND deleted_at IS NULL AND balance_applied=0", new { id }, transaction);
+        if (row?.AccountId is not long accountId || string.CompareOrdinal(row.Date, TodayIso) > 0) return;
+        AdjustAccountBalance(connection, transaction, accountId, TransactionRules.BalanceDelta(row.Kind, row.AmountCents));
+        connection.Execute("UPDATE transactions SET balance_applied=1 WHERE id=@id", new { id }, transaction);
+    }
+
+    /// <summary>Tira do saldo o efeito já aplicado de um lançamento (remoção ou alteração), pelos valores anteriores.</summary>
+    private static void RevertAppliedTransaction(SqliteConnection connection, SqliteTransaction transaction, TransactionEffectRow row, long id)
+    {
+        if (!row.BalanceApplied || row.AccountId is not long accountId) return;
+        AdjustAccountBalance(connection, transaction, accountId, -TransactionRules.BalanceDelta(row.Kind, row.AmountCents));
+        connection.Execute("UPDATE transactions SET balance_applied=0 WHERE id=@id", new { id }, transaction);
+    }
+
+    /// <summary>Aplica no saldo os lançamentos pendentes cuja data já chegou; roda junto com os débitos automáticos.</summary>
+    public int ApplyDueTransactionBalances()
+    {
+        using var connection = factory.CreateOpenConnection();
+        using var transaction = connection.BeginTransaction();
+        var pending = connection.Query<long>(
+            "SELECT id FROM transactions WHERE deleted_at IS NULL AND balance_applied=0 AND account_id IS NOT NULL AND date<=@today ORDER BY date,id",
+            new { today = TodayIso }, transaction).AsList();
+        foreach (var id in pending) ApplyDueTransaction(connection, transaction, id);
+        transaction.Commit();
+        return pending.Count;
     }
 
     private static void AdjustAccountBalance(SqliteConnection connection, SqliteTransaction transaction, long accountId, long delta) =>
@@ -264,4 +309,7 @@ internal sealed class TransactionEffectRow
     public string Kind { get; init; } = "";
     public long AmountCents { get; init; }
     public long? AccountId { get; init; }
+    public string Date { get; init; } = "";
+    /// <summary>O lançamento já entrou no saldo da conta (data alcançada).</summary>
+    public bool BalanceApplied { get; init; }
 }

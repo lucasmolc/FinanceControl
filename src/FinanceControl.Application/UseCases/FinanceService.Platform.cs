@@ -218,8 +218,9 @@ public sealed partial class FinanceService
 
         var transactions = store.ListCardTransactions(cardId, Iso(cycles[0].PeriodStart), Iso(cycles[^1].ClosingDate));
         var payments = PaymentsByMonth(cardId);
+        var forecast = ForecastFor(cardId);
         return OperationResult<IReadOnlyList<CardInvoice>>.Success(
-            cycles.Select(cycle => BuildInvoice(cycle, transactions.Where(item => cycle.Contains(ParseDate(item.Date))).ToList(), payments)).ToList());
+            cycles.Select(cycle => BuildInvoice(cycle, transactions.Where(item => cycle.Contains(ParseDate(item.Date))).ToList(), payments, Project(cycle, forecast))).ToList());
     }
 
     public OperationResult<CardInvoiceDetail> GetCardInvoice(long cardId, string month)
@@ -228,11 +229,13 @@ public sealed partial class FinanceService
         if (card is null) return OperationResult<CardInvoiceDetail>.NotFound();
         if (!IsInvoiceMonth(month)) return OperationResult<CardInvoiceDetail>.Invalid("month", Messages.Month);
         var (cycle, items) = LoadInvoice(card, month);
-        var detail = BuildInvoice(cycle, items, PaymentsByMonth(cardId));
+        var projected = Project(cycle, ForecastFor(cardId));
+        var detail = BuildInvoice(cycle, items, PaymentsByMonth(cardId), projected);
         return OperationResult<CardInvoiceDetail>.Success(new CardInvoiceDetail
         {
             Month = detail.Month, PeriodStart = detail.PeriodStart, PeriodEnd = detail.PeriodEnd, ClosingDate = detail.ClosingDate, DueDate = detail.DueDate,
-            TotalCents = detail.TotalCents, ItemsCount = detail.ItemsCount, Status = detail.Status, Paid = detail.Paid, Items = items
+            TotalCents = detail.TotalCents, ItemsCount = detail.ItemsCount, Status = detail.Status, Paid = detail.Paid, Items = items,
+            ProjectedCents = detail.ProjectedCents, ProjectedCount = detail.ProjectedCount, Projected = projected
         });
     }
 
@@ -326,7 +329,7 @@ public sealed partial class FinanceService
         return new Card
         {
             Id = card.Id, Name = card.Name, ClosingDay = card.ClosingDay, DueDay = card.DueDay, RealLimitCents = card.RealLimitCents,
-            PersonalLimitCents = card.PersonalLimitCents, Active = card.Active, Brand = card.Brand, Network = card.Network, Color = card.Color,
+            PersonalLimitCents = card.PersonalLimitCents, Active = card.Active, Brand = card.Brand, Network = card.Network, Color = card.Color, LastDigits = card.LastDigits,
             OpenInvoiceCents = totals.GetValueOrDefault(open.Month),
             UnpaidInvoicesCents = unpaid,
             AvailableLimitCents = CardInvoiceRules.AvailableLimit(card.RealLimitCents, card.PersonalLimitCents, unpaid)
@@ -339,12 +342,15 @@ public sealed partial class FinanceService
         return (cycle, store.ListCardTransactions(card.Id, Iso(cycle.PeriodStart), Iso(cycle.ClosingDate)));
     }
 
-    private CardInvoice BuildInvoice(InvoiceCycle cycle, IReadOnlyList<Transaction> items, IReadOnlyDictionary<string, CardInvoicePayment> payments)
+    private CardInvoice BuildInvoice(InvoiceCycle cycle, IReadOnlyList<Transaction> items, IReadOnlyDictionary<string, CardInvoicePayment> payments,
+        IReadOnlyList<ProjectedInvoiceItem>? projected = null)
     {
         payments.TryGetValue(cycle.Month, out var payment);
         var total = items.Sum(item => CardInvoiceRules.SignedAmount(item.Kind, item.BaseAmountCents));
         return new CardInvoice
         {
+            ProjectedCents = projected?.Sum(item => item.BaseAmountCents) ?? 0,
+            ProjectedCount = projected?.Count ?? 0,
             Month = cycle.Month,
             PeriodStart = Iso(cycle.PeriodStart),
             PeriodEnd = Iso(cycle.PeriodEnd),

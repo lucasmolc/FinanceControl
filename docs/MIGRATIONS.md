@@ -118,3 +118,24 @@ Cria o banco de contas (`accounts.db`) com a tabela `users` (`username` único s
 Não altera nenhum banco financeiro. O `finance.db` de versões sem login continua intacto na pasta de dados, mas sem dono: cada conta começa com um banco novo e vazio, migrado pelas mesmas migrações 001–009. Para usar os dados antigos, copie o arquivo para `users/<id>/finance.db` com o servidor parado ou restaure um backup JSON (passo a passo no README, seção "Contas de usuário e segurança").
 
 Validação feita: testes automatizados de integração (cadastro cria `accounts.db` e `users/<id>/finance.db` já no `schema_version` 009, dois usuários com arquivos separados, hash no formato `pbkdf2-sha256$600000$…`, troca do `security_stamp` invalida a sessão) e subida real da API em pasta de dados vazia (cadastro, login, sessão e isolamento pela interface).
+
+## 010_imports_and_installments
+
+Importação de fatura/extrato, compra parcelada e saldo da conta por data.
+
+Aditiva: colunas e índices novos. A única linha alterada é `transactions.balance_applied`, preenchida para preservar
+os saldos gravados.
+
+- `cards.last_digits` (TEXT, nulo): últimos 4 dígitos, usados para dizer de qual cartão é cada compra de uma fatura
+  importada com cartões adicionais.
+- `transactions.import_fingerprint` (TEXT, nulo): marca de origem da linha importada. Não nulo = veio de importação;
+  é por ela que reimportar o mesmo arquivo não duplica. Índice `ix_transactions_import`.
+- `transactions.installment_group` (TEXT), `installment_number` e `installment_count` (INTEGER), todos nulos: a série
+  de parcelas de uma mesma compra. Índice `ix_transactions_installment`.
+- `transactions.balance_applied` (INTEGER NOT NULL DEFAULT 0): o lançamento já entrou no saldo da conta. Lançamentos
+  com data futura ficam pendentes e são aplicados no dia pela rotina de débito automático. A migração marca como
+  aplicados todos os lançamentos não removidos — que é exatamente o estado dos saldos gravados até aqui —, então
+  nenhum saldo muda. Índice parcial `ix_transactions_pending_balance` (só linhas com conta).
+
+Compatibilidade: bancos anteriores continuam funcionando. Restaurar um backup anterior à v1.4 aplica o mesmo critério
+de `balance_applied` (ver `SqliteFinanceStore.RestoreBackup`), preservando os saldos do arquivo.

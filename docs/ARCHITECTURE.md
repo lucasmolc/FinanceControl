@@ -102,6 +102,35 @@ React → endpoint HTTP → IFinanceUseCases → IFinanceStore (porta) → SQLit
 
 As dependências de código apontam para o núcleo. A infraestrutura conhece a porta que implementa; a aplicação não conhece SQLite.
 
+## Invariantes de dados (v1.4)
+
+- **A data do lançamento é a data do fato.** A competência (`transactions.date`), a fatura (derivada do ciclo do
+  cartão) e o caixa (saída bancária) são eixos distintos e nenhum deles desloca a data da compra. A exceção é a
+  parcela, que é um fato do próprio mês. Ver `docs/FLUXOS.md` §1.1 e §4.
+- **O saldo da conta reflete o que já aconteceu.** `bank_accounts.current_balance_cents` só considera lançamentos com
+  data até hoje; os futuros ficam pendentes (`transactions.balance_applied = 0`) e são aplicados no dia pela rotina de
+  débito automático. O invariante vive no adaptador SQLite, que é quem possui o saldo.
+- **Uma compra parcelada é uma operação só.** As N parcelas são gravadas em uma única transação de banco e
+  compartilham `installment_group`; qualquer mês fechado na série recusa a compra inteira.
+- **Importação é determinística e sem estado.** A conferência não grava nada; a confirmação relê o mesmo arquivo. A
+  marca de origem (`transactions.import_fingerprint`) é o que impede importar a mesma linha duas vezes.
+- **Previsão não é lançamento.** As cobranças de assinatura esperadas em uma fatura aberta ficam em um total à parte
+  (`projected_cents`), fora de resumos, relatórios e orçamentos.
+
+### Onde cada regra mora
+
+| Assunto | Arquivo |
+|---|---|
+| Ciclo e situação de fatura | `Domain/Rules/CardInvoiceRules.cs` |
+| Parcelamento (datas e rateio) | `Domain/Rules/InstallmentRules.cs` |
+| Leitura de fatura/extrato (valores, datas, parcela, portador) | `Domain/Rules/StatementRules.cs` |
+| Formatos de arquivo (CSV, OFX, QIF) | `Application/Import/StatementReader.cs` |
+| Casos de uso da importação | `Application/UseCases/FinanceService.Imports.cs` |
+| Série de parcelas | `Application/UseCases/FinanceService.Installments.cs` |
+| Previsão nas faturas abertas | `Application/UseCases/FinanceService.InvoiceForecast.cs` |
+| Saldo por data | `Infrastructure/Persistence/SqliteFinanceStore.cs` |
+| Ajuda das telas | `Web/src/features/help/pageHelp.ts` |
+
 ## Decisões de dados
 
 - SQLite é a fonte de verdade local, com um arquivo por usuário (`users/<id>/finance.db`) e um banco de contas (`accounts.db`, só nome e hash da senha). O isolamento entre usuários é físico: nenhuma consulta precisa filtrar por dono, e backup, restauração e cópias automáticas (`users/<id>/backups/`) são naturalmente por usuário.

@@ -63,6 +63,12 @@ public class Transaction
     /// <summary>Reais por 1 unidade da moeda (texto decimal; "1" para BRL).</summary>
     public string ExchangeRate { get; init; } = "1";
     public string? Brand { get; init; }
+    /// <summary>Parcelamento (v1.4): posição e total de parcelas da compra, e o grupo que une a série.</summary>
+    public int? InstallmentNumber { get; init; }
+    public int? InstallmentCount { get; init; }
+    public string? InstallmentGroup { get; init; }
+    /// <summary>Veio de uma importação de fatura ou extrato (v1.4).</summary>
+    public bool Imported { get; init; }
 }
 public class Bill
 {
@@ -76,6 +82,8 @@ public class Goal { public long Id { get; init; } public string Name { get; init
 public class Investment { public long Id { get; init; } public string Name { get; init; } = ""; public string? Institution { get; init; } public string Type { get; init; } = ""; public long InvestedCents { get; init; } public long CurrentCents { get; init; } public string? Liquidity { get; init; } public string? Benchmark { get; init; } public bool Active { get; init; } public string Currency { get; init; } = "BRL"; public string? Brand { get; init; } public string? LogoData { get; init; } }
 public class Card { public long Id { get; init; } public string Name { get; init; } = ""; public int ClosingDay { get; init; } public int DueDay { get; init; } public long RealLimitCents { get; init; } public long PersonalLimitCents { get; init; } public bool Active { get; init; }
     public string? Brand { get; init; } public string? Network { get; init; } public string? Color { get; init; }
+    /// <summary>Últimos 4 dígitos: identificam o cartão nas faturas importadas com cartões adicionais (v1.4).</summary>
+    public string? LastDigits { get; init; }
     /// <summary>Calculados a partir das faturas (somente em <c>/api/state</c>).</summary>
     public long OpenInvoiceCents { get; init; } public long UnpaidInvoicesCents { get; init; } public long? AvailableLimitCents { get; init; } }
 public class BankAccount { public long Id { get; init; } public string Name { get; init; } = ""; public string Institution { get; init; } = ""; public string AccountType { get; init; } = ""; public long CurrentBalanceCents { get; init; } public string? ColorLabel { get; init; } public bool Active { get; init; } public string? LastMovementDate { get; init; } public string Currency { get; init; } = "BRL"; public string? Brand { get; init; } public string? LogoData { get; init; } }

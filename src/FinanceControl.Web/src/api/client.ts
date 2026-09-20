@@ -1,7 +1,7 @@
 import type {
   AboutInfo, AutoDebitRunResult, CurrencyDto, SettingsUpdate, BankStatementItem, CardInvoice, CardInvoiceDetail, CardLinks, CategoryLinks, ChecklistCommand, ChecklistItem, CloseMonthResult, EntriesPage, FinanceState, GoalEntry,
   InvestmentEntry, InvoicePayCommand, InvoicePayResult, MonthClosing, MonthlySummary, PageRequest, ReassignResult, RecordModule, RestoreBackupResult, SubscriptionChargeCommand,
-  SubscriptionChargeResult, Transaction, PlanCommand, CardInvoiceRow,
+  SubscriptionChargeResult, Transaction, PlanCommand, CardInvoiceRow, ImportCommand, ImportPreview, ImportResult, ResetAccountResult,
 } from "../types";
 import { isGatewayFailure, reportRequestFailure, reportRequestSuccess } from "./connectivity";
 import { reportUnauthorized } from "./session";
@@ -168,10 +168,16 @@ export const api = {
   /** Runs due auto-debits (MEL-29); idempotent. */
   runAutoDebits: () => request<AutoDebitRunResult>("/api/auto-debits/run", json("POST")),
 
+  /** v1.4: lê a fatura ou o extrato enviado sem gravar nada, e grava as linhas escolhidas. */
+  importPreview: (body: ImportCommand) => request<ImportPreview>("/api/imports/preview", json("POST", body)),
+  importCommit: (body: ImportCommand) => request<ImportResult>("/api/imports/commit", json("POST", body)),
+
   about: () => request<AboutInfo>("/api/about"),
   /** R1 decision 4: liveness probe of the local server (offline banner retries). */
   health: () => request<unknown>("/api/health"),
   restoreBackup: (document: unknown) => request<RestoreBackupResult>("/api/backup/restore", json("POST", document)),
+  /** v1.4: apaga todos os dados da conta e volta ao primeiro acesso (exige o texto de confirmação). */
+  resetAccount: (body: { confirmation: string }) => request<ResetAccountResult>("/api/reset", json("POST", body)),
   backupUrl: "/api/backup",
   databaseBackupUrl: "/api/backup/database",
   /** R1-BILLS-2: card invoices due in `month` plus earlier unpaid closed ones (every active card). */

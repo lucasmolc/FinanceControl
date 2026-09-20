@@ -29,6 +29,7 @@ public static class FinanceEndpoints
         MapUsability(endpoints);
         MapClosings(endpoints);
         MapCardInvoices(endpoints);
+        MapImports(endpoints);
         MapBackup(endpoints);
         InsightEndpoints.MapInsights(endpoints);
         endpoints.MapFallback("/api/{**path}", () => Results.Problem(statusCode: StatusCodes.Status404NotFound, title: RouteNotFoundTitle));
@@ -157,6 +158,14 @@ public static class FinanceEndpoints
             ToHttp(useCases.UnpayCardInvoice(cardId, month), _ => Results.NoContent()));
     }
 
+    /// <summary>Importação de fatura ou extrato: conferir não grava nada; confirmar grava as linhas escolhidas.</summary>
+    private static void MapImports(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapPost("/api/imports/preview", (ImportCommand command, IFinanceUseCases useCases) => ToHttp(useCases.PreviewImport(command), Results.Ok));
+        endpoints.MapPost("/api/imports/commit", (ImportCommand command, IFinanceUseCases useCases) =>
+            ToHttp(useCases.CommitImport(command), result => Results.Created("/api/transactions", result)));
+    }
+
     private static void MapBackup(IEndpointRouteBuilder endpoints)
     {
         endpoints.MapGet("/api/backup", (IFinanceUseCases useCases, TimeProvider time) =>
@@ -166,6 +175,8 @@ public static class FinanceEndpoints
         });
         endpoints.MapGet("/api/backup/database", (IFinanceUseCases useCases, TimeProvider time) =>
             Results.File(useCases.CreateDatabaseSnapshot(), "application/vnd.sqlite3", $"lmm-finance-{LocalDate(time)}.db"));
+        // Zerar a conta apaga tudo e não tem volta pela interface: exige o texto de confirmação no corpo.
+        endpoints.MapPost("/api/reset", (ResetCommand command, IFinanceUseCases useCases) => ToHttp(useCases.ResetAccount(command), Results.Ok));
         endpoints.MapPost("/api/backup/restore", (JsonElement body, IFinanceUseCases useCases) =>
             JsonInput.TryConvert(body, out var document)
                 ? ToHttp(useCases.RestoreBackup(document), Results.Ok)

@@ -33,6 +33,7 @@ import { isMonthClosed, monthCloseInitial } from "./features/closing/closingMode
 import { RecordModal } from "./features/records/RecordModal";
 import { recordForms } from "./features/records/registry";
 import type { SavedUndo } from "./features/records/types";
+import { HelpButton } from "./features/help/HelpButton";
 import { SetupWizard } from "./features/setup/SetupWizard";
 import { GuidedTour } from "./features/tour/GuidedTour";
 import type { ChecklistItem, FormState, ModalKind, NoticeAction, PageId, PageProps, RecordModule, RemovingRecord } from "./types";
@@ -486,6 +487,8 @@ function FinanceApp() {
       <MonthSwitcher month={month} onChange={setMonth} />
       {closed && <Badge tone="warning">Mês fechado</Badge>}
     </> : undefined} tools={<>
+      {/* Ajuda da tela atual: discreta ao lado das outras ferramentas, some nas telas sem texto de ajuda. */}
+      <HelpButton page={page} label={current.label} />
       <button type="button" className="icon-btn command-palette-trigger" aria-label="Buscar e comandos" aria-keyshortcuts="Control+K Meta+K" title={`Buscar e comandos (${PALETTE_SHORTCUT})`} onClick={() => setPaletteOpen(true)}>
         <Search size={18} aria-hidden="true" /><kbd className="kbd" aria-hidden="true">{PALETTE_SHORTCUT}</kbd>
       </button>

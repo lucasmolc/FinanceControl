@@ -77,6 +77,10 @@ public sealed partial class SqliteFinanceStore
                 {
                     connection.Execute($"DELETE FROM {table}", transaction: transaction);
                     foreach (var row in rows) InsertRestoredRow(connection, transaction, table, row);
+                    // Backup anterior à v1.4 não traz balance_applied: marcar os lançamentos ativos como aplicados mantém
+                    // os saldos exatamente como vieram no arquivo (o mesmo critério da migração 010).
+                    if (table == "transactions" && !rows.Any(item => item.ContainsKey("balance_applied")))
+                        connection.Execute("UPDATE transactions SET balance_applied = CASE WHEN deleted_at IS NULL THEN 1 ELSE 0 END", transaction: transaction);
                 }
                 catch (SqliteException)
                 {
@@ -112,6 +116,43 @@ public sealed partial class SqliteFinanceStore
             connection.Execute("DELETE FROM sqlite_sequence WHERE name=@table", new { table }, transaction);
             connection.Execute($"INSERT INTO sqlite_sequence(name, seq) SELECT @table, m FROM (SELECT MAX(id) m FROM {table}) WHERE m IS NOT NULL", new { table }, transaction);
         }
+    }
+
+    /// <summary>
+    /// Categorias com que uma conta nasce. Repete o conteúdo da migração 001 de propósito: migração aplicada nunca
+    /// muda, então o reset precisa da própria cópia para deixar a conta igual a uma recém-criada.
+    /// </summary>
+    private const string SeedCategoriesSql = """
+        INSERT INTO categories(name,kind,monthly_budget_cents)
+        SELECT name,kind,budget FROM (
+         SELECT 'Moradia/Contas' name,'expense' kind,0 budget UNION ALL SELECT 'Alimentação','expense',100000
+         UNION ALL SELECT 'Combustível','expense',45000 UNION ALL SELECT 'Lazer','expense',90000
+         UNION ALL SELECT 'Compras pessoais','expense',40000 UNION ALL SELECT 'Moto','expense',50000
+         UNION ALL SELECT 'Outros','expense',30000 UNION ALL SELECT 'Salário','income',0
+         UNION ALL SELECT 'Investimentos','investment',0
+        );
+        """;
+
+    public string ResetAccountData(string safetyCopyFileName)
+    {
+        using var connection = factory.CreateOpenConnection();
+        var safetyCopy = CreateSafetyCopy(connection, safetyCopyFileName);
+        connection.Execute("PRAGMA foreign_keys = OFF");
+        try
+        {
+            using var transaction = connection.BeginTransaction();
+            foreach (var table in BackupRestoreValidator.Tables) connection.Execute($"DELETE FROM {table}", transaction: transaction);
+            // Estado de conta nova: a única linha de configuração com os padrões (setup por fazer, tour por ver).
+            connection.Execute("INSERT INTO settings (id) VALUES (1)", transaction: transaction);
+            connection.Execute(SeedCategoriesSql, transaction: transaction);
+            ResetSequences(connection, transaction);
+            transaction.Commit();
+        }
+        finally
+        {
+            connection.Execute("PRAGMA foreign_keys = ON");
+        }
+        return safetyCopy;
     }
 
     private string CreateSafetyCopy(SqliteConnection connection, string fileName)

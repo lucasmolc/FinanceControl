@@ -64,8 +64,16 @@ public interface IFinanceUseCases
     OperationResult<bool> ClearPlan();
     OperationResult<long> EnsureFreedomGoal();
 
+    // ---------- v1.4 ----------
+    /// <summary>Lê a fatura ou o extrato enviado e devolve o que entraria, sem gravar nada.</summary>
+    OperationResult<ImportPreview> PreviewImport(ImportCommand command);
+    /// <summary>Grava os lançamentos escolhidos na conferência (sem escolha, os novos), em uma única transação.</summary>
+    OperationResult<ImportResult> CommitImport(ImportCommand command);
+
     BackupDocument CreateBackup();
     byte[] CreateDatabaseSnapshot();
     OperationResult<RestoreResult> RestoreBackup(object? document);
+    /// <summary>Apaga todos os dados da conta e devolve o app ao primeiro acesso; exige o texto de confirmação.</summary>
+    OperationResult<ResetResult> ResetAccount(ResetCommand command);
     AboutInfo GetAbout();
 }

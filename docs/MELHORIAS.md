@@ -182,4 +182,26 @@ As quedas da R1 vêm, na maioria, de ter avaliado com dados realistas pela prime
 **Estado final:**
 - 742 testes no frontend e 342 no backend.
 - `npm run check` verde.
-- Migração atual: `009_bill_active_since`.
+- Migração atual: `010_imports_and_installments`.
+
+## v1.4 — importação, parcelamento e saldo por data
+
+Rodada de funcionalidade (não de crítica de design). O que entrou e por quê:
+
+- **Importar fatura e extrato** (CSV/TXT, OFX, QIF) com conferência antes de gravar, marca de origem por linha para
+  nunca duplicar e identificação do cartão por últimos dígitos ou portador. Uma fatura real do Itaú foi usada como
+  caso de teste e definiu três regras: sinal antes do valor (`R$ -5.195,80`), a linha "Pagamento de fatura" que não
+  pode virar lançamento, e a data da compra repetida nas parcelas.
+- **Parcelamento em qualquer forma de pagamento**, com valor por parcela ou total, rateio que fecha exato e recusa da
+  compra inteira quando algum mês da série está fechado.
+- **Saldo da conta por data**: lançamento futuro só entra no saldo quando a data chega. Corrige também o caso
+  anterior de um lançamento futuro avulso derrubar o saldo de hoje. Migração preserva os saldos existentes.
+- **Previsão de assinaturas nas faturas abertas**, em total separado do realizado.
+- **Zerar a conta** com confirmação extensa, cópia automática antes e retorno ao primeiro acesso.
+- **Recriar as metas do planejamento** removidas, direto na tela de Metas.
+- **Ajuda por tela**, com o que cada função faz e a melhor forma de usá-la.
+- **Documentação de fluxos** (`FLUXOS.md`) e a regra de mantê-la atualizada junto com o código (AGENTS).
+
+Decisão de modelagem registrada: **a data da compra não é deslocada**. Competência, fatura e caixa são eixos
+distintos — um gasto de setembro cobrado na fatura de outubro continua sendo de setembro, e é pago com o salário de
+setembro, recebido no início de outubro. A única exceção é a parcela, que é um fato do próprio mês.

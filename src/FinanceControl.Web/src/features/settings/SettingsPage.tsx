@@ -18,6 +18,7 @@ import { useSession } from "../auth/sessionContext";
 import { AppearanceSection } from "./AppearanceSection";
 import { PlanSection } from "./PlanSection";
 import { MobileCollapse } from "./MobileCollapse";
+import { ResetSection } from "./ResetSection";
 import { MarketSection, ReserveSection } from "./SettingsSections";
 import {
   activeSection, backupExportedText, backupRowCount, draftFrom, isPlanningDirty, limitAdvice, mapApiFields, monthsValue, optionalMoney, parseBackup, planningPayload, readFileText, RESERVE_NEEDS_INCOME, reserveFormula, SETTINGS_OPEN_SECTION, validatePlanning,
@@ -298,6 +299,7 @@ const SECTIONS = [
   { id: "mercado", heading: "market-title", label: "Mercado" },
   { id: "copia", heading: "backup-title", label: "Cópia de segurança" },
   { id: "fechamentos", heading: "closings-title", label: "Fechamentos" },
+  { id: "zerar", heading: "reset-title", label: "Zerar a conta" },
   { id: "conta", heading: "account-title", label: "Conta" },
   { id: "ajuda", heading: "help-title", label: "Ajuda" },
 ] as const;
@@ -414,6 +416,7 @@ export function SettingsPage({ state, version, refresh, notify, notifyError, onE
       <div id="settings-mercado" className="settings-anchor"><MarketSection state={state} refresh={refresh} notify={notify} onError={fail} navigate={navigate} offline={offline} /></div>
       <div id="settings-copia" className="settings-anchor"><BackupSection refresh={refresh} notify={notify} onError={fail} offline={offline} /></div>
       <div id="settings-fechamentos" className="settings-anchor"><ClosingsSection version={version} onReopenMonth={onReopenMonth} offline={offline} /></div>
+      <div id="settings-zerar" className="settings-anchor"><ResetSection state={state} refresh={refresh} notify={notify} onError={fail} offline={offline} /></div>
       {hasAccount && <div id="settings-conta" className="settings-anchor"><AccountSection onError={fail} /></div>}
       {hasHelp && <div id="settings-ajuda" className="settings-anchor"><HelpSection onReplayTour={onReplayTour} onRevisitSetup={onRevisitSetup} /></div>}
     </div>

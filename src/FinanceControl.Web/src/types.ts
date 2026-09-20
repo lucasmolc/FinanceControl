@@ -35,6 +35,10 @@ export interface Transaction { id: number; date: string; description: string; ca
   currency?: string; base_amount_cents?: number | null; exchange_rate?: string | null;
   /** MEL-39: service/merchant brand id (lib/brands). */
   brand?: string | null;
+  /** v1.4: posição e total de parcelas da compra ("6/10") e o grupo que une a série. */
+  installment_number?: number | null; installment_count?: number | null; installment_group?: string | null;
+  /** v1.4: veio de uma importação de fatura ou extrato. */
+  imported?: boolean;
 }
 /** Auto-debit fields shared by bills and subscriptions (MEL-29). */
 export interface AutoDebitFields { auto_debit?: boolean; auto_debit_since?: string | null; account_id?: number | null; account_name?: string | null; currency?: string; }
@@ -48,6 +52,8 @@ export interface Card {
   open_invoice_cents?: number; unpaid_invoices_cents?: number; available_limit_cents?: number | null;
   /** MEL-35: issuer brand id, network and card color (#rrggbb). Cards are always BRL. */
   brand?: string | null; network?: CardNetwork | string | null; color?: string | null;
+  /** v1.4: últimos 4 dígitos, usados para saber de qual cartão é cada compra da fatura importada. */
+  last_digits?: string | null;
 }
 export type CardNetwork = "visa" | "mastercard" | "elo" | "amex" | "hipercard" | "other";
 export interface BankAccount { id: number; name: string; institution: string; account_type: string; current_balance_cents: number; color_label: string | null; active: boolean; /** Latest movement date (MEL-14); optional for older servers. */ last_movement_date?: string | null; currency?: string; brand?: string | null; logo_data?: string | null; }
@@ -105,8 +111,39 @@ export interface InvoicePayment { amount_cents: number; date: string; account_id
 export interface CardInvoice {
   month: string; period_start: string; period_end: string; closing_date: string; due_date: string;
   total_cents: number; items_count: number; status: InvoiceStatus | string; paid: InvoicePayment | null;
+  /** v1.4: cobranças de assinatura esperadas neste ciclo e ainda não lançadas (fora do total realizado). */
+  projected_cents?: number; projected_count?: number;
 }
-export interface CardInvoiceDetail extends CardInvoice { items: Transaction[]; }
+/** v1.4: cobrança de assinatura prevista em uma fatura que ainda não fechou. */
+export interface ProjectedInvoiceItem {
+  subscription_id: number; name: string; date: string; amount_cents: number; currency: string;
+  base_amount_cents: number; brand: string | null; category_id: number | null; category_name: string | null;
+}
+export interface CardInvoiceDetail extends CardInvoice { items: Transaction[]; projected?: ProjectedInvoiceItem[]; }
+
+/** Importação de fatura ou extrato (v1.4). */
+export interface ImportCommand {
+  card_id?: number | null; account_id?: number | null; file_name?: string | null; content_base64: string;
+  positive_is_expense?: boolean | null; category_id?: number | null; fingerprints?: string[] | null;
+}
+export type ImportLineStatus = "novo" | "duplicado" | "importado" | "pagamento" | "mes_fechado";
+export interface ImportLine {
+  fingerprint: string; date: string; description: string; kind: Category["kind"]; amount_cents: number; currency: string;
+  card_id: number | null; card_name: string | null; account_id: number | null; invoice_month: string | null;
+  installment_number: number | null; installment_count: number | null; purchase_date: string | null;
+  notes: string | null; status: ImportLineStatus | string;
+  /** Lançamento já existente que a linha parece repetir (cobrança de assinatura, por exemplo). */
+  duplicate_of: string | null; duplicate_date: string | null;
+}
+export interface ImportTotals {
+  lines: number; new: number; duplicate: number; imported: number; payment: number; closed_month: number;
+  expense_cents: number; income_cents: number;
+}
+export interface ImportPreview {
+  format: string; target_kind: "card" | "account" | string; target_id: number; target_name: string; currency: string;
+  positive_is_expense: boolean; lines: ImportLine[]; totals: ImportTotals;
+}
+export interface ImportResult { created: number; skipped: number; ids: number[]; }
 export interface InvoicePayCommand { account_id: number; date?: string; amount_cents?: number; }
 export interface InvoicePayResult { ok: boolean; bank_entry_id: number; }
 
@@ -119,6 +156,8 @@ export interface EntriesPage<T> { items: T[]; total: number | null; }
 export interface PageRequest { limit: number; offset: number; }
 
 export interface RestoreBackupResult { ok: boolean; safety_copy: string; restored: Record<string, number>; }
+/** v1.4: zerar a conta devolve onde ficou a cópia automática feita antes de apagar. */
+export interface ResetAccountResult { ok: boolean; safety_copy: string; }
 
 /** Opens a record form in create mode (`initial` pre-fills/overrides the form defaults). */
 export type OpenModal = (kind: ModalKind, initial?: FormState) => void;

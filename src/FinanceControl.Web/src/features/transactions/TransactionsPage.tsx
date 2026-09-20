@@ -1,5 +1,5 @@
 import { useContext, useMemo, useState, useSyncExternalStore } from "react";
-import { ListChecks, Plus, ReceiptText, SearchX, Tags, Trash2 } from "lucide-react";
+import { FileUp, ListChecks, Plus, ReceiptText, SearchX, Tags, Trash2 } from "lucide-react";
 import { api, isConnectivityError } from "../../api/client";
 import { EmptyState, LinkedName, Money, PageHeader, RowActions, Skeleton, StatStrip } from "../../components/ui";
 import { BrandBadge } from "../../components/ui/BrandBadge";
@@ -20,8 +20,9 @@ import type { FinanceState, PageProps, Transaction } from "../../types";
 import { MonthCloseBar } from "../closing/MonthCloseBar";
 import { isMonthClosed, MONTH_CLOSED } from "../closing/closingModel";
 import { BulkCategorizeDialog } from "./BulkCategorizeDialog";
+import { ImportDialog } from "../imports/ImportDialog";
 import { OFFLINE_REASON } from "../records/offline";
-import { accountOrMethod, baseAmount, shortMethod, dayLabel, dayNet, shortDayLabel, SORT_OPTIONS, sortFromOption, sortOption, filtersFromParams, isForeign, kindFilters, matchesTransaction, signedBase, transactionTotals, UNCATEGORIZED, type KindFilter } from "./transactionsModel";
+import { accountOrMethod, baseAmount, shortMethod, dayLabel, dayNet, installmentLabel, isImported, shortDayLabel, SORT_OPTIONS, sortFromOption, sortOption, filtersFromParams, isForeign, kindFilters, matchesTransaction, signedBase, transactionTotals, UNCATEGORIZED, type KindFilter } from "./transactionsModel";
 
 /**
  * Amount in the transaction currency; BRL equivalent below for other currencies (MEL-26). Investments stay neutral with
@@ -96,6 +97,9 @@ export function TransactionsPage({ state, month, summary, version, openModal, op
   const confirm = useContext(ConfirmContext);
   const [selected, setSelected] = useState<Array<string | number>>([]);
   const [categorizing, setCategorizing] = useState<Transaction[] | null>(null);
+  // v1.4: importação de fatura/extrato e o filtro que ajuda a revisar o que acabou de entrar.
+  const [importing, setImporting] = useState(false);
+  const [importedOnly, setImportedOnly] = useState(false);
   // R1-LANC-4: grouped by day the date column is hidden, so the order lives in the toolbar.
   const [sort, setSort] = useState<SortState | null>({ column: "date", direction: "desc" });
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -130,9 +134,10 @@ export function TransactionsPage({ state, month, summary, version, openModal, op
 
   const add = () => openModal("transaction");
   const totals = transactionTotals(items);
-  const visible = items.filter(item => matchesTransaction(item, search, kind, category));
-  const filtering = search.trim() !== "" || kind !== "all" || category !== "";
-  const clearFilters = () => { setSearch(""); setKind("all"); setCategory(""); setSelected([]); syncRoute("all", ""); };
+  const visible = items.filter(item => matchesTransaction(item, search, kind, category, importedOnly));
+  const filtering = search.trim() !== "" || kind !== "all" || category !== "" || importedOnly;
+  const clearFilters = () => { setSearch(""); setKind("all"); setCategory(""); setImportedOnly(false); setSelected([]); syncRoute("all", ""); };
+  const importedCount = items.filter(isImported).length;
   const monthLabel = formatMonthLabel(month);
   // Also true right after a month change: rows of the previous month are hidden (MEL-07).
   const firstLoad = loading && !items.length;
@@ -207,7 +212,7 @@ export function TransactionsPage({ state, month, summary, version, openModal, op
 
   const columns: DataTableColumn<Transaction>[] = [
     { id: "date", header: "Data", cell: item => compactDensity ? formatDate(item.date).slice(0, 5) : formatDate(item.date), sortValue: item => item.date, width: compactDensity ? "5rem" : "7.5rem" },
-    { id: "description", header: "Descrição", className: "col-description", cell: item => <span className="description-cell" title={item.notes ? `${item.description} · ${item.notes}` : item.description}><DescriptionIcon item={item} state={state} /><span className="description-text"><b>{item.description}</b>{item.notes && <small className="muted description-notes">{item.notes}</small>}<small className="muted description-category">{categoryName(item)}</small></span></span>, sortValue: item => item.description.toLocaleLowerCase("pt-BR") },
+    { id: "description", header: "Descrição", className: "col-description", cell: item => <span className="description-cell" title={item.notes ? `${item.description} · ${item.notes}` : item.description}><DescriptionIcon item={item} state={state} /><span className="description-text"><b>{item.description}</b>{installmentLabel(item) && <span className="installment-chip" title={`Parcela ${installmentLabel(item)} da compra`}>{installmentLabel(item)}</span>}{item.notes && <small className="muted description-notes">{item.notes}</small>}<small className="muted description-category">{categoryName(item)}</small></span></span>, sortValue: item => item.description.toLocaleLowerCase("pt-BR") },
     { id: "category", header: "Categoria", className: "col-category", cell: item => <LinkedName name={item.category_name} removed={item.category_id !== null && !activeCategories.has(item.category_id)} fallback="Sem categoria" />, sortValue: item => item.category_name ?? "" },
     { id: "account", header: "Conta/Forma", cell: item => <AccountCell item={item} state={state} />, sortValue: item => accountOrMethod(item) },
     { id: "amount", header: "Valor", align: "right", cell: item => <Amount item={item} />, sortValue: signedBase },
@@ -218,6 +223,7 @@ export function TransactionsPage({ state, month, summary, version, openModal, op
     {/* R3-LANC-3: one line under the page title — the count with the month (no second description line). */}
     <PageHeader title={items.length ? `${transactionsLabel(items.length)} em ${monthLabel}` : `Movimentos de ${monthLabel}`} description={loading && !firstLoad ? "Atualizando…" : undefined} >
       {/* R2-LANC-3: the sidebar already has the green "Novo lançamento"; the page repeats it as a secondary button. */}
+      <Button icon={FileUp} variant="ghost" disabled={Boolean(lockedReason)} title={lockedReason ?? "Importar fatura de cartão ou extrato de conta"} onClick={() => setImporting(true)}>Importar fatura</Button>
       <Button icon={Plus} disabled={Boolean(lockedReason)} title={lockedReason} onClick={add}>Novo lançamento</Button>
     </PageHeader>
     <MonthCloseBar month={month} summary={summary} onCloseMonth={onCloseMonth} onReopenMonth={onReopenMonth} disabledReason={disconnected ? OFFLINE_REASON : undefined} />
@@ -243,6 +249,9 @@ export function TransactionsPage({ state, month, summary, version, openModal, op
       <Segmented aria-label="Filtrar por tipo" size="sm" value={kind} onChange={chooseKind} options={kindFilters.map(filter => ({ value: filter.value, label: filter.label }))} />
       <Select className="transactions-category" aria-label="Filtrar por categoria" size="sm" value={category} onChange={chooseCategory} emptyLabel="Todas as categorias" missingLabel={removedCategory} options={categoryOptions} />
       <Select className="transactions-sort" aria-label="Ordenar lançamentos" size="sm" value={sortOption(sort)} onChange={next => setSort(sortFromOption(next))} options={sortChoices(sort)} />
+      {/* v1.4: revisar o que acabou de ser importado sem misturar com o resto do mês. */}
+      {importedCount > 0 && <Button size="sm" variant={importedOnly ? "primary" : "ghost"} aria-pressed={importedOnly}
+        onClick={() => { setImportedOnly(!importedOnly); setSelected([]); }}>Só importados ({importedCount})</Button>}
       {filtering && <span className="muted" role="status">{visible.length} de {transactionsLabel(items.length)}</span>}
     </div>}
 
@@ -272,6 +281,9 @@ export function TransactionsPage({ state, month, summary, version, openModal, op
 
     {categorizing && <BulkCategorizeDialog rows={categorizing} state={state} refresh={refresh} notify={notify} notifyError={notifyError}
       onClose={() => setCategorizing(null)} onDone={() => { setCategorizing(null); setSelected([]); }} />}
+
+    {importing && <ImportDialog state={state} refresh={refresh} notify={notify} notifyError={notifyError}
+      onClose={() => setImporting(false)} onDone={() => { setImporting(false); setImportedOnly(true); }} />}
 
     {!loading && !error && !items.length && <EmptyState icon={ReceiptText} title="Nenhum lançamento neste mês" description={closedReason ? `${monthLabel} está fechado e não tem lançamentos.` : `Registre uma receita, despesa ou aporte de ${monthLabel} para acompanhar o mês.`} actionLabel={lockedReason ? undefined : "Novo lançamento"} onAction={add} />}
     {items.length > 0 && !visible.length && <EmptyState compact icon={SearchX} title="Nenhum lançamento encontrado" description="Nenhum lançamento do mês corresponde à busca ou aos filtros escolhidos." actionLabel="Limpar filtros" onAction={clearFilters} />}

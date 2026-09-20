@@ -34,7 +34,9 @@ export function preselectedCard(state: FinanceState, preferred: number | null = 
 const REPEATED_KEYS = ["date", "kind", "payment_method", "card_id", "account_id", "currency"] as const;
 
 export function nextTransactionForm(form: FormState): FormState {
-  const next: FormState = { description: "", amount: "", category_id: "", brand: "", notes: "", exchange_rate: "" };
+  // O próximo lançamento começa sem repetição: parcelamento e assinatura são escolhas de uma compra só.
+  const next: FormState = { description: "", amount: "", category_id: "", brand: "", notes: "", exchange_rate: "",
+    repeat: "none", amount_basis: "installment", installment_number: "1", installment_count: "" };
   for (const key of REPEATED_KEYS) next[key] = form[key];
   return next;
 }

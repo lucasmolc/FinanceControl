@@ -8,6 +8,44 @@ namespace FinanceControl.Api.Tests;
 public sealed class TransactionBalanceTests(FinanceApiFactory factory) : IClassFixture<FinanceApiFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
+    private readonly FinanceApiFactory _factory = factory;
+
+    /// <summary>
+    /// v1.4: o saldo da conta só conta lançamento cuja data já chegou. Uma parcela à frente fica pendente e entra no
+    /// saldo no dia, pela rotina de débito automático; remover e restaurar respeitam a mesma regra.
+    /// </summary>
+    [Fact]
+    public async Task Future_transaction_only_reaches_the_balance_when_its_date_arrives()
+    {
+        _factory.Time.FixedUtcNow = new DateTimeOffset(2026, 9, 20, 12, 0, 0, TimeSpan.Zero);
+        try
+        {
+            var account = await _client.CreateAccountAsync("Conta futura", 100000);
+            var id = await _client.CreateAsync("/api/transactions", new { payment_method = "pix", date = "2026-10-05", description = "Parcela 2/2", kind = "expense", amount_cents = 2500, account_id = account });
+            Assert.Equal(100000, await _client.AccountBalanceAsync(account));
+
+            // Antes da data, a rotina não aplica nada.
+            await _client.SendJsonAsync(HttpMethod.Post, "/api/auto-debits/run");
+            Assert.Equal(100000, await _client.AccountBalanceAsync(account));
+
+            _factory.Time.FixedUtcNow = new DateTimeOffset(2026, 10, 5, 12, 0, 0, TimeSpan.Zero);
+            await _client.SendJsonAsync(HttpMethod.Post, "/api/auto-debits/run");
+            Assert.Equal(97500, await _client.AccountBalanceAsync(account));
+
+            // Já aplicado: rodar de novo não duplica.
+            await _client.SendJsonAsync(HttpMethod.Post, "/api/auto-debits/run");
+            Assert.Equal(97500, await _client.AccountBalanceAsync(account));
+
+            Assert.Equal(HttpStatusCode.NoContent, (await _client.DeleteAsync($"/api/transactions/{id}")).StatusCode);
+            Assert.Equal(100000, await _client.AccountBalanceAsync(account));
+            await _client.SendJsonAsync(HttpMethod.Post, $"/api/transactions/{id}/restore");
+            Assert.Equal(97500, await _client.AccountBalanceAsync(account));
+        }
+        finally
+        {
+            _factory.Time.FixedUtcNow = null;
+        }
+    }
 
     [Fact]
     public async Task Linked_transaction_keeps_account_balances_consistent_through_its_lifecycle()

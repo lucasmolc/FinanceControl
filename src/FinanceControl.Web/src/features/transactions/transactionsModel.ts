@@ -16,9 +16,17 @@ const normalizeSearch = (text: string): string => text.normalize("NFD").replace(
 /** Category filter value: "" = all, "sem" = uncategorized, otherwise the category id. */
 export const UNCATEGORIZED = "sem";
 
+/** v1.4: veio de uma importação de fatura ou extrato. */
+export const isImported = (item: Transaction): boolean => item.imported === true;
+
+/** v1.4: rótulo da parcela ("6/10") de uma compra parcelada; null quando o lançamento não faz parte de uma série. */
+export const installmentLabel = (item: Transaction): string | null =>
+  item.installment_number && item.installment_count ? `${item.installment_number}/${item.installment_count}` : null;
+
 /** Matches description, category and notes against the search text, the kind and the category filters. */
-export function matchesTransaction(item: Transaction, search: string, kind: KindFilter, category = ""): boolean {
+export function matchesTransaction(item: Transaction, search: string, kind: KindFilter, category = "", importedOnly = false): boolean {
   if (kind !== "all" && item.kind !== kind) return false;
+  if (importedOnly && !isImported(item)) return false;
   if (category === UNCATEGORIZED ? item.category_id !== null : category !== "" && String(item.category_id) !== category) return false;
   const query = normalizeSearch(search);
   if (!query) return true;

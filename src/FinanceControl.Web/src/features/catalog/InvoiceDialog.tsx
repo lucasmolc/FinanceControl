@@ -1,4 +1,4 @@
-import { ReceiptText } from "lucide-react";
+import { CalendarClock, ReceiptText } from "lucide-react";
 import { api } from "../../api/client";
 import { Drawer } from "../../components/ui/Drawer";
 import { Badge, EmptyState, Money, Skeleton } from "../../components/ui";
@@ -45,7 +45,22 @@ export function InvoiceDialog({ cardId, cardName, month, version, onClose }: Inv
         </tr>)}</tbody>
       </table></div>
         : <EmptyState compact icon={ReceiptText} title="Nenhuma compra nesta fatura" description="Lançamentos com este cartão dentro do período aparecem aqui." />}
-      <p className="invoice-total">Total da fatura <b><Money cents={invoice.total_cents} /></b></p>
+      {(invoice.projected ?? []).length > 0 && <div className="stack invoice-projected-list">
+        <p className="muted"><CalendarClock size={14} aria-hidden="true" /> Previsto até o fechamento (assinaturas ativas deste cartão ainda não lançadas)</p>
+        <div className="table-wrap"><table className="data-table">
+          <caption className="sr-only">Cobranças previstas da {invoiceRef(month)}</caption>
+          <thead><tr><th scope="col">Data</th><th scope="col">Assinatura</th><th scope="col">Categoria</th><th scope="col" className="num">Valor</th></tr></thead>
+          <tbody>{(invoice.projected ?? []).map(item => <tr key={`${item.subscription_id}:${item.date}`}>
+            <td data-label="Data">{formatDate(item.date)}</td>
+            <td data-label="Assinatura">{item.name}</td>
+            <td data-label="Categoria">{item.category_name ?? <span className="muted">Sem categoria</span>}</td>
+            <td data-label="Valor" className="num"><Money cents={-item.amount_cents} currency={item.currency} signed tone="neutral" /></td>
+          </tr>)}</tbody>
+        </table></div>
+      </div>}
+      <p className="invoice-total">Total da fatura <b><Money cents={invoice.total_cents} /></b>
+        {(invoice.projected_count ?? 0) > 0 && <small className="muted"> · previsto <Money cents={invoice.projected_cents ?? 0} /></small>}
+      </p>
     </>;
   })();
 

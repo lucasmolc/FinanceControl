@@ -51,6 +51,13 @@ public sealed record BackupDocument(int Version, string ExportedAt, IReadOnlyDic
 /// <summary>Conteúdo validado de um backup a restaurar: tabela → linhas (coluna → valor escalar).</summary>
 public sealed record RestorePlan(IReadOnlyDictionary<string, IReadOnlyList<IReadOnlyDictionary<string, object?>>> Tables, string SafetyCopyFileName);
 
+/// <summary>Zerar a conta: apaga todos os dados financeiros e volta ao primeiro acesso. O texto de confirmação é
+/// obrigatório porque a operação não tem volta pela interface (resta a cópia automática gravada antes).</summary>
+public sealed record ResetCommand(string? Confirmation);
+
+/// <summary>Resultado do reset: onde ficou a cópia automática feita antes de apagar.</summary>
+public sealed record ResetResult(bool Ok, string SafetyCopy);
+
 /// <summary>Cotações e indicadores obtidos das APIs públicas (valores já convertidos para o formato interno).</summary>
 public sealed record FetchedRate(string Currency, decimal RateBrl, double? ChangePct, string Source);
 public sealed record FetchedIndicator(string Code, double Value, string? ReferenceDate, string Source);

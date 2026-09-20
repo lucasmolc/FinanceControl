@@ -92,7 +92,31 @@ public static class Messages
     public const string TooManyAttempts = "Muitas tentativas seguidas. Aguarde um minuto e tente novamente.";
     public const string RequestRejected = "Requisição recusada.";
 
+    // v1.4
+    public const string CardDigits = "Informe os 4 últimos dígitos do cartão.";
+    public const string InstallmentCountRange = "Informe de 2 a 72 parcelas.";
+    public const string InstallmentNumberRange = "Informe a parcela atual, entre 1 e 72.";
+    public const string InstallmentCountRequired = "Informe o total de parcelas.";
+    public const string InstallmentNumberAboveCount = "A parcela atual não pode ser maior que o total de parcelas.";
+    public const string InstallmentTotalTooSmall = "O valor total precisa cobrir ao menos um centavo por parcela.";
+    public const string InstallmentOnUpdate = "O parcelamento só pode ser definido ao criar o lançamento.";
+    public const string ImportEmpty = "O arquivo está vazio.";
+    public const string ImportNoLines = "Não foi possível ler lançamentos deste arquivo. Envie a fatura ou o extrato em CSV, OFX ou QIF, com as colunas de data, descrição e valor.";
+    public const string ImportNoDescription = "Sem descrição";
+    public const string ImportFileRequired = "Escolha o arquivo da fatura ou do extrato.";
+    public const string ImportFileTooLarge = "O arquivo deve ter até 5 MB.";
+    public const string ImportFileInvalid = "Não foi possível ler o arquivo enviado.";
+    public const string ImportTargetRequired = "Escolha o cartão ou a conta que recebe os lançamentos.";
+    public const string ImportTargetSingle = "Escolha um cartão ou uma conta, não os dois.";
+    public const string ImportNothingSelected = "Selecione ao menos um lançamento para importar.";
+    public const string ResetConfirmation = "Para apagar todos os dados, confirme digitando APAGAR TUDO.";
+
     public static string MaxLength(int length) => $"Use no máximo {length} caracteres.";
+
+    /// <summary>Parcelas que cairiam em meses fechados (AAAA-MM), listados em ordem.</summary>
+    public static string MonthsClosed(IReadOnlyList<string> months) => months.Count == 1
+        ? MonthClosed(months[0])
+        : $"As parcelas caem em meses fechados ({string.Join(", ", months.Select(month => $"{month[5..7]}/{month[..4]}"))}). Reabra-os para lançar a compra inteira.";
 
     /// <summary>Operação que alteraria um mês fechado (<paramref name="month"/> no formato AAAA-MM).</summary>
     public static string MonthClosed(string month) => $"O mês {month[5..7]}/{month[..4]} está fechado. Reabra-o para alterar.";

@@ -31,6 +31,7 @@ import { blockedReason, OFFLINE_REASON } from "../records/offline";
 import { useAsyncList } from "../../hooks/useAsyncList";
 import { goalProgress } from "./goalProgress";
 import { isAutoReserveGoal } from "./reserveModel";
+import { AutoGoalsNotice } from "./AutoGoalsNotice";
 
 /** Error toast (MEL-28) with a plain notice as fallback when the host gives no `notifyError`. */
 const reportError = (notifyError: PageProps["notifyError"], notify: PageProps["notify"]) => (reason: unknown) =>
@@ -434,6 +435,8 @@ export function GoalsPage({ state, version, summary, openModal, openEdit, onRemo
 
   return <>
     <PageHeader title="Seus objetivos" description="Quanto já foi guardado, quanto falta e quanto aportar por mês para chegar no prazo." actionLabel="Nova meta" onAction={add} actionDisabledReason={offline ? OFFLINE_REASON : undefined} />
+    {/* As metas do planejamento (reserva e número da liberdade) não voltam sozinhas depois de removidas. */}
+    <AutoGoalsNotice settings={settings} refresh={refresh} notify={notify} onError={reportError(notifyError, notify)} offline={offline} />
     {state.goals.length ? <>
       {goals.length > 0 && <StatStrip label="Resumo das metas" items={[
         { label: "Guardado", value: <Money cents={saved.cents} />, hint: note ?? <>de <Money cents={target.cents} />{freedomGoal ? " · sem o Número da liberdade" : ""}</> },

@@ -350,7 +350,7 @@ describe("CR-22 · índice das seções", () => {
     Element.prototype.scrollIntoView = scroll;
     renderSettings({}, vi.fn(), { onReplayTour: vi.fn() });
     const index = screen.getByRole("navigation", { name: "Seções das configurações" });
-    expect(within(index).getAllByRole("button").map(button => button.textContent)).toEqual(["Perfil", "Plano 70-20-10", "Reserva", "Aparência", "Mercado", "Cópia de segurança", "Fechamentos", "Ajuda"]);
+    expect(within(index).getAllByRole("button").map(button => button.textContent)).toEqual(["Perfil", "Plano 70-20-10", "Reserva", "Aparência", "Mercado", "Cópia de segurança", "Fechamentos", "Zerar a conta", "Ajuda"]);
     fireEvent.click(within(index).getByRole("button", { name: "Aparência" }));
     expect(scroll).toHaveBeenCalled();
     expect(document.activeElement?.id).toBe("appearance-title");
